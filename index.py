@@ -2,6 +2,7 @@ import re
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin, urldefrag
 import hashlib
+import nltk
 
 index = {}
 docMap = {}
