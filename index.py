@@ -4,6 +4,7 @@ import hashlib
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin, urldefrag
 import nltk
+from nltk.tokenize import word_tokenize
 import zipfile
 import json
 
@@ -33,7 +34,7 @@ def generateDocID(document):
 def index(document):
 
     docID = generateDocID(document)
-    tokens = tokenize(document)
+    tokens = word_tokenize(document)
     
     for token in set(tokens):
         if token in index:
