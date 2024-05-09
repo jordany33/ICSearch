@@ -17,7 +17,8 @@ alphaNum = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q",
 def fileContents(file):
     with open(file, 'r') as json_file:
         content = json.load(json_file)
-    return content
+        html_parsed = BeautifulSoup(content, "html.parser")
+    return html_parsed
 
 
 #Function that returns a bool indicating if token is valid or not (not all non-alphanumeric)
