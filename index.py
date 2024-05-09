@@ -10,6 +10,7 @@ import json
 
 index = {}
 docMap = {}
+docID = 0
 text_documents = set()
 alphaNum = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","0","1","2","3","4","5","6","7","8","9"]
 
@@ -37,7 +38,8 @@ def tokenAlNum(token) -> bool:
 
 #Generate unique Doc ID for each document
 def generateDocID(document):
-    return hashlib.md5(document.encode()).hexdigest()
+    docID += 1
+    return docID
 
 
 def build_index(zip_path):
