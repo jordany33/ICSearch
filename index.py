@@ -13,12 +13,23 @@ docMap = {}
 text_documents = set()
 alphaNum = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","0","1","2","3","4","5","6","7","8","9"]
 
-#Gets content of JSON files
-def fileContents(file):
-    with open(file, 'r') as json_file:
-        content = json.load(json_file)
-        html_parsed = BeautifulSoup(content, "html.parser")
-    return html_parsed
+import zipfile
+import json
+from bs4 import BeautifulSoup
+
+#Extract and process JSON file content
+def fileContents(zip_path):
+    parsed_text = []
+    with zipfile.ZipFile(zip_path, 'r') as zip:
+        for file_info in zip.infolist():
+            if file_info.filename.endswith('.json') and not file_info.is_dir():
+                with zip.open(file_info) as file:
+                    file_content = json.load(file)  
+                    html_content = file_content.get('html', '')
+                    html_parsed = BeautifulSoup(html_content, "html.parser")
+                    text = html_parsed.get_text()
+                    parsed_text.append(text)  
+    return parsed_text
 
 #Function that returns a bool indicating if token is valid or not (not all non-alphanumeric)
 def tokenAlNum(token) -> bool:
@@ -30,17 +41,6 @@ def tokenAlNum(token) -> bool:
 #Generate unique Doc ID for each document
 def generateDocID(document):
     return hashlib.md5(document.encode()).hexdigest()
-
-def index(document):
-
-    docID = generateDocID(document)
-    tokens = word_tokenize(document)
-    
-    for token in set(tokens):
-        if token in index:
-            index[token].append(docID)
-        else:
-            index[token] = [docID]
 
 
 def build_index(text_documents):
