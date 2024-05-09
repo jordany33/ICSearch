@@ -9,6 +9,5 @@ index = {}
 docMap = {}
 text_documents = set()
 
-
 def build_index(text_documents):
     pass
