@@ -1,15 +1,22 @@
+import os
 import re
 import hashlib
-import nltk
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin, urldefrag
-from zipfile import ZipFile
-from nltk.tokenize import sent_tokenize, word_tokenize 
+import zipfile
+import json
 
 index = {}
 docMap = {}
 text_documents = set()
 alphaNum = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","0","1","2","3","4","5","6","7","8","9"]
+
+#Gets content of JSON files
+def fileContents(file):
+    with open(file, 'r') as json_file:
+        content = json.load(json_file)
+    return content
+
 
 #Function that returns a bool indicating if token is valid or not (not all non-alphanumeric)
 def tokenAlNum(token) -> bool:
