@@ -80,7 +80,7 @@ def removeClutter(tokens) -> list:
 def build_index():
     global curNum
     #Opens zip file
-    zip = zipfile.ZipFile("DEVTest.zip", "r")
+    zip = zipfile.ZipFile("developer.zip", "r")
     #Iterates through all file in zip file
     for file in zip.infolist():
         #Checks its not a directory
@@ -109,13 +109,18 @@ def build_index():
                                 index[term].append(post)
                             elif term not in index:
                                 index[term] = [post]
+                record = open("record.txt", "a")
+                print(f"Current doc is {curNum}", file = record)
+                print(f"Posting list for it is: {postings.keys()}", file = record)
+                print(f"Index length is: {len(index)}", file = record)
+                record.close()
                 curNum += 1
     pickleIndex()
     size = sys.getsizeof(index)
     stats = open("stats.txt", "w")
     print(f"Size of index in bytes is : {size}", file = stats)
     print(f"Number of docs is: {curNum}", file = stats)
-    print(f"Humber of tokens is: {len(index)}", file = stats)
+    print(f"Number of tokens is: {len(index)}", file = stats)
     # for term, posts in index.items():
     #     printf(f"Term is {term}, Postings:", file = stats)
     print(f"Index: {index}", file = stats)
