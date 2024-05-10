@@ -1,10 +1,10 @@
 import re
 import hashlib
-import nltk
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin, urldefrag
 import zipfile
 from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.stem import PorterStemmer
 import json
 import pickle
 import sys
@@ -70,8 +70,9 @@ def build_index():
                     #Checks if parsed content is there
                     if parsed_text:
                         #Gets tokens then uses then for index, adding our cur doc to the index[token] for each token if not already there
+                        ps = PorterStemmer()
                         text = parsed_text.get_text()
-                        tokens = removeClutter(word_tokenize(text))
+                        tokens = [ps.stem(x) for x in removeClutter(word_tokenize(text))]
                         for x in tokens:
                             #If not yet added but the term exist
                             if x in index and (curNum not in index[x]):
