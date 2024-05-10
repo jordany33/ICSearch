@@ -3,7 +3,7 @@ import hashlib
 import nltk
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin, urldefrag
-from zipfile
+import zipfile
 from nltk.tokenize import sent_tokenize, word_tokenize
 import json
 
