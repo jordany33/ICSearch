@@ -1,3 +1,8 @@
+Group Members:
+Oscar Tran otran2@uci.edu 30841052
+Jordan Yee jordady1@uci.edu 91427122
+Travis Tran travitt1@uci.edu 67987698
+
 Number of indexed docs is: 55393
 Number of unique words/tokens is: 1093243
 Size of index in kilobytes is : 518530 KB
