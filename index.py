@@ -24,17 +24,22 @@ curNum = 0
 #When running first time only
 #nltk.download('punkt') 
 
+
+#Posting class based on slides
 class Posting:
     def __init__(self, docid, tfidf, positions):
         self.docid = docid
         self.tfidf = tfidf # use freq counts for now
         self.positions = positions
+    #String print for our posting object
     def __str__(self):
         return(f'Docid is {self.docid}, frequency count is {self.tfidf}, position lists is {self.positions}')
         return
+    #String representation of posting object
     def __repr__(self):
         return(f'Docid is {self.docid}, frequency count is {self.tfidf}, position lists is {self.positions}')
         return
+    #Increment count and position list
     def addCount(self, pos):
         self.tfidf += 1
         self.positions.append(pos)
