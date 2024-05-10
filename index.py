@@ -10,6 +10,7 @@ from nltk.stem import PorterStemmer
 import json
 import pickle
 import sys
+import io
 
 #Our index
 index = {}
@@ -30,8 +31,10 @@ class Posting:
         self.positions = positions
     def __str__(self):
         return(f'Docid is {self.docid}, frequency count is {self.tfidf}, position lists is {self.positions}')
+        return
     def __repr__(self):
         return(f'Docid is {self.docid}, frequency count is {self.tfidf}, position lists is {self.positions}')
+        return
     def addCount(self, pos):
         self.tfidf += 1
         self.positions.append(pos)
@@ -50,6 +53,34 @@ def computeWordFrequencies(tokens) -> dict():
             freq[tok].addCount(t)
     return freq
 
+#Reads the content and returns a list of the alphanumeric tokens within it
+def tokenize(content: str) -> list['Tokens']:
+    #Vars below are our current token we are building and the list of tokens respectively
+    curTok = ''
+    tokens = []
+    file = None
+    cur = 0
+    #Going through the content string at a time
+    while cur < len(content):
+        #Read at most 5 chars
+        c = content[cur]
+        #converts character to lowercase if it is alpha, done since we don't care about capitalization, makes it easier to check given
+        #we made our list's alpha characters only lowercase
+        c = c.lower()
+        #If c is alphanum, concatenate it to our current token, else add the current token to list if not empty string and start on a new token
+        if c in alphaNum:
+            curTok = curTok + c
+        else:
+            if curTok != '':
+                tokens.append(curTok)
+                curTok = ''
+        cur = cur + 1
+    #For when we reach the end of the content, check what our last token is
+    #If our curTok isn't empty, add it to token list
+    if curTok != '':
+        tokens.append(curTok)
+    return tokens
+
 #Attempts to save seem our index using pickle
 def pickleIndex() ->None:
     global index
@@ -65,6 +96,13 @@ def tokenValid(token) -> bool:
             return True
     return False
 
+#Function that returns a bool indicating if token is valid or not (all alphanumeric)
+def tokenValid2(token) -> bool:
+    for x in token:
+        if x not in alphaNum:
+            return False
+    return True
+
 #Gets rid of tokens that are nonvalid according to token valid from the given list
 def removeClutter(tokens) -> list:
     toRemove = []
@@ -79,6 +117,7 @@ def removeClutter(tokens) -> list:
 
 def build_index():
     global curNum
+    global index
     #Opens zip file
     zip = zipfile.ZipFile("developer.zip", "r")
     #Iterates through all file in zip file
@@ -95,13 +134,20 @@ def build_index():
                 #Checks if there is content
                 if file.get('content'):
                     #Parses it
-                    parsed_text = BeautifulSoup(file.get('content'), "html.parser")
+                    encode = 'utf8'
+                    content = file.get('content')
+                    if file.get('encoding'):
+                        encode = file.get('encoding')
+                        content.encode(encode)
+                    parsed_text = BeautifulSoup(content, "html.parser", from_encoding = encode)
                     #Checks if parsed content is there
                     if parsed_text:
                         #Gets tokens then uses then for index, adding our cur doc to the index[token] for each token if not already there
                         ps = PorterStemmer()
-                        text = parsed_text.get_text()
-                        tokens = [ps.stem(x) for x in removeClutter(word_tokenize(text))]
+                        text = parsed_text.get_text('')
+                        #Nltk tokenizer not sure if we're going to keep
+                        #tokens = [ps.stem(x) for x in removeClutter(word_tokenize(text))]
+                        tokens = [ps.stem(x) for x in tokenize(text)]
                         postings = computeWordFrequencies(tokens)
                         for term, post in postings.items():
                             #If not yet added but the term exist
@@ -118,11 +164,8 @@ def build_index():
     pickleIndex()
     size = sys.getsizeof(index)
     stats = open("stats.txt", "w")
-    print(f"Size of index in bytes is : {size}", file = stats)
     print(f"Number of docs is: {curNum}", file = stats)
-    print(f"Number of tokens is: {len(index)}", file = stats)
-    # for term, posts in index.items():
-    #     printf(f"Term is {term}, Postings:", file = stats)
-    print(f"Index: {index}", file = stats)
+    print(f"Number of unique tokens/words is: {len(index)}", file = stats)
+    print(f"Size of index in bytes is : {size}", file = stats)
     stats.close()
 build_index()
