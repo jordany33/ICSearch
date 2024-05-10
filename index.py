@@ -19,8 +19,18 @@ def tokenValid(token) -> bool:
             return True
     return False
 
+#Gets rid of tokens that are nonvalid according to token valid from the given list
+def removeClutter(tokens) -> list:
+    toRemove = []
+    for tok in tokens:
+        if not tokenValid(tok):
+            toRemove.append(tok)
+    for tok in toRemove:
+        tokens.remove(tok)
+    return tokens
 
 def build_index():
+    global curNum
     zip = zipfile.ZipFile("DEVTest.zip", "r")
     for file in zip.infolist():
         if not file.is_dir():
@@ -29,8 +39,12 @@ def build_index():
             if file.get('url'):
                 docMap[curNum] = (file.get('url'))
                 if file.get('content'):
-                    if curNum == 1:
-                        print(file.get('content'))
+                    parsed_text = BeautifulSoup(file.get('content'), "html.parser")
+                    if parsed_text:
+                        text = parsed_text.get_text()
+                        tokens = removeClutter(word_tokenize(text))
+                        if curNum == 93:
+                            print(tokens)
                 curNum += 1
-    print(len(urls))
     print(len(docMap))
+build_index()
