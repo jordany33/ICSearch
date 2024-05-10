@@ -1,5 +1,7 @@
 import re
 import hashlib
+#Only needed when downloading the punkt for the first time
+#import nltk
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin, urldefrag
 import zipfile
@@ -20,6 +22,33 @@ curNum = 0
 
 #When running first time only
 #nltk.download('punkt') 
+
+class Posting:
+    def __init__(self, docid, tfidf, positions):
+        self.docid = docid
+        self.tfidf = tfidf # use freq counts for now
+        self.positions = positions
+    def __str__(self):
+        return(f'Docid is {self.docid}, frequency count is {self.tfidf}, position lists is {self.positions}')
+    def __repr__(self):
+        return(f'Docid is {self.docid}, frequency count is {self.tfidf}, position lists is {self.positions}')
+    def addCount(self, pos):
+        self.tfidf += 1
+        self.positions.append(pos)
+
+#Computes posting lists for the tokens provided for the given doc
+def computeWordFrequencies(tokens) -> dict():
+    global curNum
+    #The mapped tokens to frequencies we return
+    freq = dict()
+    #Iterate through tokens, if not yet in dict, initialize the count to 1, otherwise increment the count by 1
+    for t in range(len(tokens)):
+        tok = tokens[t]
+        if tok not in freq:
+            freq[tok] = Posting(curNum, 1, [t])
+        else:
+            freq[tok].addCount(t)
+    return freq
 
 #Attempts to save seem our index using pickle
 def pickleIndex() ->None:
@@ -73,12 +102,13 @@ def build_index():
                         ps = PorterStemmer()
                         text = parsed_text.get_text()
                         tokens = [ps.stem(x) for x in removeClutter(word_tokenize(text))]
-                        for x in tokens:
+                        postings = computeWordFrequencies(tokens)
+                        for term, post in postings.items():
                             #If not yet added but the term exist
-                            if x in index and (curNum not in index[x]):
-                                index[x].append(curNum)
-                            elif x not in index:
-                                index[x] = [curNum]
+                            if term in index:
+                                index[term].append(post)
+                            elif term not in index:
+                                index[term] = [post]
                 curNum += 1
     pickleIndex()
     size = sys.getsizeof(index)
@@ -86,6 +116,8 @@ def build_index():
     print(f"Size of index in bytes is : {size}", file = stats)
     print(f"Number of docs is: {curNum}", file = stats)
     print(f"Humber of tokens is: {len(index)}", file = stats)
+    # for term, posts in index.items():
+    #     printf(f"Term is {term}, Postings:", file = stats)
     print(f"Index: {index}", file = stats)
     stats.close()
 build_index()
