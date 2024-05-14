@@ -11,7 +11,6 @@ import json
 import pickle
 import sys
 import io
-import nltk
 
 #Our index
 index = {}
