@@ -43,6 +43,12 @@ class Posting:
     def addCount(self, pos):
         self.tfidf += 1
         self.positions.append(pos)
+    #Returns doc number of our post
+    def getDoc(self):
+        return self.docid
+    #Returns tfidf of our post
+    def getTfidf(self):
+        return self.tfidf
 
 #Computes posting lists for the tokens provided for the given doc
 def computeWordFrequencies(tokens) -> dict():
@@ -91,7 +97,15 @@ def pickleIndex() ->None:
     global index
     file = open("pickleIndex", "wb")
     pickle.dump(index, file)
-    file.close
+    file.close()
+    return
+
+#Attempts to save seem our index using pickle
+def pickleDocMap() ->None:
+    global docMap
+    file = open("pickleDocMap", "wb")
+    pickle.dump(docMap, file)
+    file.close()
     return
 
 #Function that returns a bool indicating if token is valid or not (not all non-alphanumeric)
@@ -167,10 +181,12 @@ def build_index():
                 record.close()
                 curNum += 1
     pickleIndex()
+    pickleDocMap()
     size = sys.getsizeof(index)
     stats = open("stats.txt", "w")
     print(f"Number of docs is: {curNum}", file = stats)
     print(f"Number of unique tokens/words is: {len(index)}", file = stats)
     print(f"Size of index in bytes is : {size}", file = stats)
     stats.close()
-build_index()
+if __name__ == "__main__":
+    build_index()
