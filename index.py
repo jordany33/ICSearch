@@ -8,6 +8,7 @@ from nltk.stem import PorterStemmer
 import json
 import pickle
 import sys
+import nltk
 
 #Our index
 index = {}
@@ -19,7 +20,7 @@ alphaNum = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q",
 curNum = 0
 
 #When running first time only
-#nltk.download('punkt') 
+nltk.download('punkt') 
 
 #Attempts to save seem our index using pickle
 def pickleIndex() ->None:
@@ -51,7 +52,7 @@ def removeClutter(tokens) -> list:
 def build_index():
     global curNum
     #Opens zip file
-    zip = zipfile.ZipFile("DEVTest.zip", "r")
+    zip = zipfile.ZipFile("developer.zip", "r")
     #Iterates through all file in zip file
     for file in zip.infolist():
         #Checks its not a directory
