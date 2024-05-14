@@ -23,69 +23,7 @@ alphaNum = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q",
 curNum = 0
 
 #When running first time only
-nltk.download('punkt') 
-
-
-#Posting class based on slides
-class Posting:
-    def __init__(self, docid, tfidf, positions):
-        self.docid = docid
-        self.tfidf = tfidf # use freq counts for now
-        self.positions = positions
-    #String print for our posting object
-    def __str__(self):
-        return(f'Docid is {self.docid}, frequency count is {self.tfidf}, position lists is {self.positions}')
-        return
-    #String representation of posting object
-    def __repr__(self):
-        return(f'Docid is {self.docid}, frequency count is {self.tfidf}, position lists is {self.positions}')
-        return
-    #Increment count and position list
-    def addCount(self, pos):
-        self.tfidf += 1
-        self.positions.append(pos)
-
-#Computes posting lists for the tokens provided for the given doc
-def computeWordFrequencies(tokens) -> dict():
-    global curNum
-    #The mapped tokens to frequencies we return
-    freq = dict()
-    #Iterate through tokens, if not yet in dict, initialize the count to 1, otherwise increment the count by 1
-    for t in range(len(tokens)):
-        tok = tokens[t]
-        if tok not in freq:
-            freq[tok] = Posting(curNum, 1, [t])
-        else:
-            freq[tok].addCount(t)
-    return freq
-
-#Reads the content and returns a list of the alphanumeric tokens within it
-def tokenize(content: str) -> list['Tokens']:
-    #Vars below are our current token we are building and the list of tokens respectively
-    curTok = ''
-    tokens = []
-    file = None
-    cur = 0
-    #Going through the content string at a time
-    while cur < len(content):
-        #Read at most 5 chars
-        c = content[cur]
-        #converts character to lowercase if it is alpha, done since we don't care about capitalization, makes it easier to check given
-        #we made our list's alpha characters only lowercase
-        c = c.lower()
-        #If c is alphanum, concatenate it to our current token, else add the current token to list if not empty string and start on a new token
-        if c in alphaNum:
-            curTok = curTok + c
-        else:
-            if curTok != '':
-                tokens.append(curTok)
-                curTok = ''
-        cur = cur + 1
-    #For when we reach the end of the content, check what our last token is
-    #If our curTok isn't empty, add it to token list
-    if curTok != '':
-        tokens.append(curTok)
-    return tokens
+#nltk.download('punkt') 
 
 
 #Posting class based on slides
@@ -187,7 +125,6 @@ def build_index():
     global curNum
     global index
     #Opens zip file
-    zip = zipfile.ZipFile("developer.zip", "r")
     zip = zipfile.ZipFile("developer.zip", "r")
     #Iterates through all file in zip file
     for file in zip.infolist():
