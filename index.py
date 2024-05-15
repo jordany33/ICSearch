@@ -34,10 +34,30 @@ class Posting:
         self.fields = fields
     #String print for our posting object
     def __str__(self):
-        return(f':{self.docid}|{self.tfidf}|{self.positions}|{self.fields}')
+        postStr = f':{self.docid}|{self.tfidf}|'
+        if self.fields == []:
+            postStr = postStr + 'None'
+        for x in self.fields:
+            postStr = postStr + ' ' +  str(x)
+        postStr = postStr + '|'
+        if self.positions == []:
+            postStr = postStr + 'None'
+        for x in self.positions:
+            postStr = postStr + ' ' +  str(x)
+        return postStr
     #String representation of posting object
     def __repr__(self):
-        return(f':{self.docid}|{self.tfidf}|{self.positions}|{self.fields}')
+        postStr = f':{self.docid}|{self.tfidf}|'
+        if self.fields == []:
+            postStr = postStr + 'None'
+        for x in self.fields:
+            postStr = postStr + ' ' +  str(x)
+        postStr = postStr + '|'
+        if self.positions == []:
+            postStr = postStr + 'None'
+        for x in self.positions:
+            postStr = postStr + ' ' +  str(x)
+        return postStr
     #Increment count and position list
     def addCount(self, pos):
         self.tfidf += 1
@@ -55,6 +75,48 @@ class Posting:
     #Updates the tfidf value to be newVal
     def updateTfidf(self, newVal):
         self.tfidf = newVal
+
+#Parses a line of input from the index and returns the corresponding term and list of postings that it parses and recreates
+def parseStr(line):
+    remadePosts = []
+    #Splits it by delimiter to separate term and posts
+    obj = line.split(':')
+    #Gets term and slices it off so we have a list of just post strings
+    term = obj[0]
+    obj = obj[1:]
+    #Recreates each post from each post str
+    for post in obj:
+        remadePosts.append(parsePost(post))
+    #Returns term and post
+    return term, remadePosts
+
+#Parses a post str and turns it into a posting object which it returns
+def parsePost(postStr):
+    #Splits to get posting attributes
+    attr = postStr.split('|')
+    #Gets docid and tfidf by just getting the index because they're just an int
+    docId = attr[0]
+    tfidf = attr[1]
+    #Parses the list string to get the list values for fields and pos
+    fields = parseAttrList(attr[2])
+    pos = parseAttrList(attr[3])
+    #Creates and returns posting object
+    return (Posting(docId, tfidf, fields, pos))
+
+#Parses a list string and returns a recreated list
+def parseAttrList(listStr):
+    #Represented empty lists as 'None' in our string representation of our posting, so if we see it return []
+    if listStr == 'None':
+        return []
+    #Split the list str to get each element
+    attrList = []
+    elems = listStr.split()
+    #Add each element to list we return, ensure no empty string is appended
+    for x in elems:
+        if x != '':
+            attrList.append(x)
+    #return the list
+    return attrList
 
 #Computes posting lists for the tokens provided for the given doc
 def computeWordFrequencies(tokens) -> dict():
