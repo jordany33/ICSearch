@@ -1,3 +1,0 @@
-Number of indexed docs is: 55393
-Number of unique words/tokens is: 1093243
-Size of index in kilobytes is : 518530 KB
