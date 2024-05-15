@@ -111,7 +111,10 @@ def partialIndex(partialNum) ->None:
     global index
     file = open(("partialIndex"+str(partialNum)), "w")
     for t,f in sorted(index.items(), key=(lambda x : (x[0])) ):
-        print(t+":"+str(f), file = file)
+        print(t, end = '', file = file)
+        for post in f:
+            print(str(post), end = '', file = file)
+        print(file=file)
     file.close()
     return
 
