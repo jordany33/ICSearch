@@ -27,18 +27,17 @@ curNum = 0
 
 #Posting class based on slides
 class Posting:
-    def __init__(self, docid, tfidf, positions):
+    def __init__(self, docid, tfidf, fields , positions):
         self.docid = docid
         self.tfidf = tfidf # use freq counts for now
         self.positions = positions
+        self.fields = fields
     #String print for our posting object
     def __str__(self):
-        return(f'Docid is {self.docid}, frequency count is {self.tfidf}, position lists is {self.positions}')
-        return
+        return(f':{self.docid}|{self.tfidf}|{self.positions}|{self.fields}')
     #String representation of posting object
     def __repr__(self):
-        return(f'Docid is {self.docid}, frequency count is {self.tfidf}, position lists is {self.positions}')
-        return
+        return(f':{self.docid}|{self.tfidf}|{self.positions}|{self.fields}')
     #Increment count and position list
     def addCount(self, pos):
         self.tfidf += 1
@@ -49,6 +48,13 @@ class Posting:
     #Returns tfidf of our post
     def getTfidf(self):
         return self.tfidf
+    #Adds the val to fields for the posting object
+    def addField(self, val):
+        self.fields.append(val)
+        self.tfidf += 1
+    #Updates the tfidf value to be newVal
+    def updateTfidf(self, newVal):
+        self.tfidf = newVal
 
 #Computes posting lists for the tokens provided for the given doc
 def computeWordFrequencies(tokens) -> dict():
@@ -59,7 +65,7 @@ def computeWordFrequencies(tokens) -> dict():
     for t in range(len(tokens)):
         tok = tokens[t]
         if tok not in freq:
-            freq[tok] = Posting(curNum, 1, [t])
+            freq[tok] = Posting(curNum, 1, [], [t])
         else:
             freq[tok].addCount(t)
     return freq
@@ -92,11 +98,20 @@ def tokenize(content: str) -> list['Tokens']:
         tokens.append(curTok)
     return tokens
 
-#Attempts to save seem our index using pickle
+#Attempts to save our partial index using pickle
 def pickleIndex() ->None:
     global index
     file = open("pickleIndex", "wb")
     pickle.dump(index, file)
+    file.close()
+    return
+
+#Attempts to save our partial index
+def partialIndex(partialNum) ->None:
+    global index
+    file = open(("partialIndex"+str(partialNum)), "w")
+    for t,f in sorted(index.items(), key=(lambda x : (x[0])) ):
+        print(t+":"+str(f), file = file)
     file.close()
     return
 
@@ -114,6 +129,24 @@ def tokenValid(token) -> bool:
         if x in alphaNum:
             return True
     return False
+
+#Add fields to the posting objects given which fields to add
+def addFields(postings, soup, field, stemmer):
+    #Gets all tags and texts associated with the given tag
+    texts = soup.find_all(field)
+    #Extracts the text
+    for text in texts:
+        content = text.get_text()
+        #tokenizes text
+        tokens = [stemmer.stem(x) for x in tokenize(content)]
+        #Updates the field list or creates new posting is term not yet seen
+        #Can't really track positions of headers and bold reliably so we don't track positions for these tags, but
+        #we still do for the regular tokens
+        for tok in tokens:
+            if tok in postings:
+                postings[tok].addField(field)
+            else:
+                postings[tok] = Posting(curNum, 1, [field], [])
 
 #Function that returns a bool indicating if token is valid or not (all alphanumeric)
 def tokenValid2(token) -> bool:
@@ -137,8 +170,10 @@ def removeClutter(tokens) -> list:
 def build_index():
     global curNum
     global index
+    partialInd = 0
+    terms = set()
     #Opens zip file
-    zip = zipfile.ZipFile("developer.zip", "r")
+    zip = zipfile.ZipFile("DEVTest.zip", "r")
     #Iterates through all file in zip file
     for file in zip.infolist():
         #Checks its not a directory
@@ -163,11 +198,16 @@ def build_index():
                     if parsed_text:
                         #Gets tokens then uses then for index, adding our cur doc to the index[token] for each token if not already there
                         ps = PorterStemmer()
-                        text = parsed_text.get_text('')
+                        text = parsed_text.get_text()
                         #Nltk tokenizer not sure if we're going to keep
                         #tokens = [ps.stem(x) for x in removeClutter(word_tokenize(text))]
                         tokens = [ps.stem(x) for x in tokenize(text)]
                         postings = computeWordFrequencies(tokens)
+                        addFields(postings, parsed_text, 'b', ps)
+                        addFields(postings, parsed_text, 'h1', ps)
+                        addFields(postings, parsed_text, 'h2', ps)
+                        addFields(postings, parsed_text, 'h3', ps)
+                        addFields(postings, parsed_text, 'strong', ps)
                         for term, post in postings.items():
                             #If not yet added but the term exist
                             if term in index:
@@ -180,13 +220,19 @@ def build_index():
                 print(f"Index length is: {len(index)}", file = record)
                 record.close()
                 curNum += 1
-    pickleIndex()
+                if curNum % 30 == 0 and curNum != 0:
+                    partialIndex(partialInd)
+                    partialInd += 1
+                    index.clear()
+    #pickleIndex()
+    partialIndex(partialInd)
     pickleDocMap()
     size = sys.getsizeof(index)
     stats = open("stats.txt", "w")
     print(f"Number of docs is: {curNum}", file = stats)
     print(f"Number of unique tokens/words is: {len(index)}", file = stats)
     print(f"Size of index in bytes is : {size}", file = stats)
+    print(index, file = stats)
     stats.close()
 if __name__ == "__main__":
     build_index()
