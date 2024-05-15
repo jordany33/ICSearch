@@ -118,6 +118,33 @@ def parseAttrList(listStr):
     #return the list
     return attrList
 
+#Creates an index of indexes given the partial index name
+def createIndexofIndexes(filename):
+    #Initializes mapping and current position in file
+    positions = {}
+    current_position = 0
+
+    #Opens file
+    file = open(filename, 'r')
+    while True:
+        #While condition holds, go to the curPos value using seek and read the line
+        file.seek(current_position)
+        line = file.readline()
+
+        #If no line, breaks
+        if not line:
+            break
+
+        #Split by : and get the first element to get the word
+        objs = line.split(':')
+        word = objs[0]
+        #Update mapping with word and its current position
+        positions[word] = current_position
+
+        #Move curPos pointer to the next line
+        current_position += len(line)
+    return positions
+
 #Computes posting lists for the tokens provided for the given doc
 def computeWordFrequencies(tokens) -> dict():
     global curNum
