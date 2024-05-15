@@ -3,6 +3,22 @@ import index
 import pickle
 from index import Posting, tokenize
 from nltk.stem import PorterStemmer
+import math
+
+
+
+def calcTFIDF(postings):
+    tf_idfs = []
+    total_documents = 55393
+    total_contain_t = len(postings)
+
+    for post in postings:
+        post_freq = post.tfidf
+        tfidf = (1 + math.log(post_freq)) * (math.log(total_documents/total_contain_t))
+        tf_idfs.append(tfidf)
+
+    return tf_idfs
+
 
 #Extracts the boolean query results from index
 def extractFromIndex(tokens) -> list:
