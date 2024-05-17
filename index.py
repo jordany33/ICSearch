@@ -265,7 +265,7 @@ def build_index():
     partialInd = 0
     terms = set()
     #Opens zip file
-    zip = zipfile.ZipFile("DEVTest.zip", "r")
+    zip = zipfile.ZipFile("developer.zip", "r")
     #Iterates through all file in zip file
     for file in zip.infolist():
         #Checks its not a directory
@@ -312,12 +312,12 @@ def build_index():
                 print(f"Index length is: {len(index)}", file = record)
                 record.close()
                 curNum += 1
-                if curNum % 30 == 0 and curNum != 0:
-                    partialIndex(partialInd)
-                    partialInd += 1
-                    index.clear()
-    #pickleIndex()
-    partialIndex(partialInd)
+                # if curNum % 30 == 0 and curNum != 0:
+                #     partialIndex(partialInd)
+                #     partialInd += 1
+                #     index.clear()
+    pickleIndex()
+    #partialIndex(partialInd)
     pickleDocMap()
     size = sys.getsizeof(index)
     stats = open("stats.txt", "w")

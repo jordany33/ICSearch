@@ -1,6 +1,7 @@
 import sys
 import index
 import pickle
+import time
 from index import Posting, tokenize
 from nltk.stem import PorterStemmer
 
@@ -10,13 +11,15 @@ def extractFromIndex(tokens) -> list:
     results = []
     #Checks to see if all query words are in index
     for x in tokens:
-        #Return false early if the token doesn't exist for boolean search
+        #Return [] if the token doesn't exist for boolean search
         if x not in index:
-            return False
+            return []
         else:
             if results == []:
+                #If results are empty, its equal to first set of docs it sees
                 results = [post.getDoc() for post in index[x]]
             else:
+                #Else results is the intersection
                 results = findIntersection(results, [post.getDoc() for post in index[x]])
     return results
 
@@ -71,7 +74,7 @@ if __name__ == "__main__":
         
         if query == 'exit':
             break
-        
+        start_time = time.time()
         #process the query here
         #Tokenize and stem query
         ps = PorterStemmer()
@@ -80,8 +83,9 @@ if __name__ == "__main__":
         #show results
         if results != []:
             print(f"Documents matching query '{query}':")
-            sortedResults = resultsByRelevance(tokens, results)[:5]
+            sortedResults = resultsByRelevance(tokens, results)
             for x in sortedResults:
                 print(f'Docid: {x}\nURL: {docMap[x]}')
         else:
             print(f"No documents found for query '{query}'")
+        print("--- %s seconds ---" % (time.time() - start_time))
