@@ -50,7 +50,7 @@ def relevance(tokens, docid) -> int:
     for x in tokens:
         if x in index:
             for post in index[x]:
-                if post.getDoc == docid:
+                if post.getDoc() == docid:
                     count += post.getTfidf()
                     break
     return count
