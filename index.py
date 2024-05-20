@@ -76,6 +76,52 @@ class Posting:
     def updateTfidf(self, newVal):
         self.tfidf = newVal
 
+def map_first_word_positions(filename):
+    positions = []
+    current_position = 0
+
+    with open(filename, 'r') as file:
+        while True:
+            file.seek(current_position)
+            line = file.readline()
+
+            if not line:
+                break
+
+            word_start = None
+            first_word = ""
+            for i in range(len(line)):
+                if line[i].lower() in alphaNum:
+                    if word_start is None:
+                        word_start = current_position + i
+                    first_word += line[i]
+                elif word_start is not None:
+                    break
+
+            if word_start is not None:
+                positions.append(word_start)
+                print(f"'{first_word}' starts at position: {word_start}")
+
+            current_position += len(line) + 1
+
+    return positions
+
+def combinePartialindexes(indexes_list):
+    big_dict = {}
+
+    for filename in indexes_list:
+        with open(filename, 'r') as index:
+            positions = map_first_word_positions(filename)
+
+            for i, line in index:
+                term, posting = parseStr(line)
+
+                if term not in big_dict:
+                    big_dict[term] = [positions[i]]
+                else:
+                    big_dict[term].append(positions[i])
+
+
 #Parses a line of input from the index and returns the corresponding term and list of postings that it parses and recreates
 def parseStr(line):
     remadePosts = []
