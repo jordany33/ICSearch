@@ -2,26 +2,8 @@ import sys
 import index
 import pickle
 import time
-from index import Posting, tokenize, parseStr, map_first_word_positions
+from index import Posting, tokenize
 from nltk.stem import PorterStemmer
-
-def combinePartialindexes(indexes_list):
-    big_dict = {}
-    combined_indexes = []
-
-    for filename in indexes_list:
-        with open(filename, 'r') as index:
-            byte_position = 0
-
-            for line in index:
-                combined_indexes.append(line)
-
-
-    for line in combined_indexes:
-        if parseStr(line) != big_dict:
-            term, posting = parseStr(line)
-            big_dict[term] = posting
-
 
 #Extracts the boolean query results from index
 def extractFromIndex(tokens) -> list:

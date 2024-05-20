@@ -113,7 +113,7 @@ def combinePartialindexes(indexes_list):
         with open(filename, 'r') as index:
             positions = map_first_word_positions(filename)
 
-            for i, line in index:
+            for i, line in enumerate(index):
                 term, posting = parseStr(line)
 
                 if term not in big_dict:
