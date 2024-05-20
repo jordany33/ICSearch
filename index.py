@@ -117,9 +117,9 @@ def combinePartialindexes(indexes_list):
                 term, posting = parseStr(line)
 
                 if term not in big_dict:
-                    big_dict[term] = [positions[i]]
+                    big_dict[term] = [(filename, positions[i])]
                 else:
-                    big_dict[term].append(positions[i])
+                    big_dict[term].append((filename, positions[i]))
 
 
 #Parses a line of input from the index and returns the corresponding term and list of postings that it parses and recreates
