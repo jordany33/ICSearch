@@ -143,6 +143,7 @@ def createIndexofIndexes(filename):
 
         #Move curPos pointer to the next line
         current_position += len(line)
+    file.close()
     return positions
 
 #Computes posting lists for the tokens provided for the given doc
@@ -199,12 +200,18 @@ def pickleIndex() ->None:
 def partialIndex(partialNum) ->None:
     global index
     file = open(("partialIndex"+str(partialNum)), "w")
+    #Prints out index entry to text file in the format term:post1:post2:...:postn
     for t,f in sorted(index.items(), key=(lambda x : (x[0])) ):
         print(t, end = '', file = file)
         for post in f:
             print(str(post), end = '', file = file)
         print(file=file)
     file.close()
+    return
+
+#Given the file names of the files that need to be merged, merges them into a partial index then returns the filename
+#of the merged partials, creates the filename based on the tempIndexNum parameter that is passed in
+def mergePartials(toMerge1, toMerge2, tempIndexNum) -> str:
     return
 
 #Attempts to save seem our index using pickle
@@ -259,13 +266,90 @@ def removeClutter(tokens) -> list:
         tokens.remove(tok)
     return tokens
 
+def mergePartials(toMerge1, toMerge2, tempIndexNum) -> str:
+    #Get index of indexes for each partial so it's easier to grab the item from the file
+    indexOfIndex1 = [(x,y) for x,y in createIndexofIndexes(toMerge1).items()]
+    indexOfIndex2 = [(x,y) for x,y in createIndexofIndexes(toMerge2).items()]
+
+    #Open the partial index files
+    file1 = open(toMerge1, 'r')
+    file2 = open(toMerge2, 'r')
+
+    #Make the string for the tempIndex and open it to start writing
+    tempName = "tempIndex"+str(tempIndexNum)
+    file3 = open(tempName, 'w')
+
+    #Make variables for what line/term we're on and the total number of terms in each partial index
+    ind1 = 0
+    ind2 = 0
+    len1 = len(indexOfIndex1)
+    len2 = len(indexOfIndex2)
+
+    #Iterate through until we reach the end of one file
+    while ind1< len1 and ind2 < len2:
+        #If alphanumerically word from index1< word from index 2, write it to file and increment wordnum/index1
+        if indexOfIndex1[ind1][0] < indexOfIndex2[ind2][0]:
+            file1.seek(indexOfIndex1[ind1][1])
+            line = file1.readline()
+            print(line, file = file3, end = '')
+            ind1 += 1
+        #If alphanumerically word from index1> word from index 2, write the word from index2 to file and increment wordnum/index2
+        elif indexOfIndex1[ind1][0] > indexOfIndex2[ind2][0]:
+            file2.seek(indexOfIndex2[ind2][1])
+            line = file2.readline()
+            print(line, file = file3, end = '')
+            ind2 += 1
+        #If words we're currently looking at for both partial indexes is equal, read the entire line for both
+        #parse it, combine the posting objects and write it to file
+        else:
+            file1.seek(indexOfIndex1[ind1][1])
+            line1 = file1.readline()
+            file2.seek(indexOfIndex2[ind2][1])
+            line2 = file2.readline()
+            term, posts1 = parseStr(line1)
+            term, posts2 = parseStr(line2)
+            posts1.extend(posts2)
+            posts1 = sorted(posts1, key = (lambda x: x.getDoc()))
+            print(term, end = '', file = file3)
+            for post in posts1:
+                print(str(post), end = '', file = file3)
+            print(file=file3)
+            ind1 += 1
+            ind2 += 1
+    #Make sure if we didn't go through the entire file in the first while loop to print out all its line to new file here
+    while ind1 < len1:
+        file1.seek(indexOfIndex1[ind1][1])
+        line = file1.readline()
+        print(line, file = file3, end = '')
+        ind1 += 1
+    while ind2 < len2:
+        file1.seek(indexOfIndex2[ind2][1])
+        line = file2.readline()
+        print(line, file = file3, end = '')
+        ind2 += 1
+    file1.close()
+    file2.close()
+    file3.close()
+    return tempName
+
+#Given the number of partial indexes, merges them together and updates the tfidf score from (frequency) to actual score
+def mergeIndexes(partialNum) -> None:
+    #Keeps track of our current temporary index filename
+    curTemp = None
+    partialIndString = 'partialIndex'
+    for x in range(partialNum):
+        if x == 0:
+            curTemp = partialIndString + str(x)
+        else:
+            curTemp = mergePartials(curTemp, (partialIndString+str(x)), x)
+
 def build_index():
     global curNum
     global index
     partialInd = 0
     terms = set()
     #Opens zip file
-    zip = zipfile.ZipFile("developer.zip", "r")
+    zip = zipfile.ZipFile("DEVTest.zip", "r")
     #Iterates through all file in zip file
     for file in zip.infolist():
         #Checks its not a directory
@@ -312,19 +396,18 @@ def build_index():
                 print(f"Index length is: {len(index)}", file = record)
                 record.close()
                 curNum += 1
-                # if curNum % 30 == 0 and curNum != 0:
-                #     partialIndex(partialInd)
-                #     partialInd += 1
-                #     index.clear()
-    pickleIndex()
-    #partialIndex(partialInd)
+                if curNum % 30 == 0 and curNum != 0:
+                    partialIndex(partialInd)
+                    partialInd += 1
+                    index.clear()
+    #pickleIndex()
+    partialIndex(partialInd)
+    partialInd += 1
+    mergeIndexes(partialInd)
     pickleDocMap()
-    size = sys.getsizeof(index)
     stats = open("stats.txt", "w")
     print(f"Number of docs is: {curNum}", file = stats)
     print(f"Number of unique tokens/words is: {len(index)}", file = stats)
-    print(f"Size of index in bytes is : {size}", file = stats)
-    print(index, file = stats)
     stats.close()
 if __name__ == "__main__":
     build_index()
