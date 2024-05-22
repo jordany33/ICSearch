@@ -11,6 +11,7 @@ import json
 import pickle
 import sys
 import io
+import math
 
 #Our index
 index = {}
@@ -28,8 +29,8 @@ curNum = 0
 #Posting class based on slides
 class Posting:
     def __init__(self, docid, tfidf, fields , positions):
-        self.docid = docid
-        self.tfidf = tfidf # use freq counts for now
+        self.docid = int(docid)
+        self.tfidf = float(tfidf) # use freq counts for now
         self.positions = positions
         self.fields = fields
     #String print for our posting object
@@ -203,6 +204,7 @@ def partialIndex(partialNum) ->None:
     #Prints out index entry to text file in the format term:post1:post2:...:postn
     for t,f in sorted(index.items(), key=(lambda x : (x[0])) ):
         print(t, end = '', file = file)
+        f = sorted(f, key = (lambda p: p.getDoc()))
         for post in f:
             print(str(post), end = '', file = file)
         print(file=file)
@@ -266,6 +268,19 @@ def removeClutter(tokens) -> list:
         tokens.remove(tok)
     return tokens
 
+#Generates our tfIdf score for the given list of documents for a term, ie we call this on each posting list for each term
+def calcTFIDF(postings):
+    global curNum
+    tf_idfs = []
+    total_contain_t = len(postings)
+
+    for post in postings:
+        post_freq = post.tfidf
+        tfidf = (1 + math.log10(post_freq)) * (math.log10(curNum/total_contain_t))
+        post.updateTfidf(tfidf)
+
+    return
+
 def mergePartials(toMerge1, toMerge2, tempIndexNum) -> str:
     #Get index of indexes for each partial so it's easier to grab the item from the file
     indexOfIndex1 = [(x,y) for x,y in createIndexofIndexes(toMerge1).items()]
@@ -290,22 +305,22 @@ def mergePartials(toMerge1, toMerge2, tempIndexNum) -> str:
         #If alphanumerically word from index1< word from index 2, write it to file and increment wordnum/index1
         if indexOfIndex1[ind1][0] < indexOfIndex2[ind2][0]:
             file1.seek(indexOfIndex1[ind1][1])
-            line = file1.readline()
-            print(line, file = file3, end = '')
+            line = file1.readline().strip()
+            print(line, file = file3)
             ind1 += 1
         #If alphanumerically word from index1> word from index 2, write the word from index2 to file and increment wordnum/index2
         elif indexOfIndex1[ind1][0] > indexOfIndex2[ind2][0]:
             file2.seek(indexOfIndex2[ind2][1])
-            line = file2.readline()
-            print(line, file = file3, end = '')
+            line = file2.readline().strip()
+            print(line, file = file3)
             ind2 += 1
         #If words we're currently looking at for both partial indexes is equal, read the entire line for both
         #parse it, combine the posting objects and write it to file
         else:
             file1.seek(indexOfIndex1[ind1][1])
-            line1 = file1.readline()
+            line1 = file1.readline().strip()
             file2.seek(indexOfIndex2[ind2][1])
-            line2 = file2.readline()
+            line2 = file2.readline().strip()
             term, posts1 = parseStr(line1)
             term, posts2 = parseStr(line2)
             posts1.extend(posts2)
@@ -319,13 +334,13 @@ def mergePartials(toMerge1, toMerge2, tempIndexNum) -> str:
     #Make sure if we didn't go through the entire file in the first while loop to print out all its line to new file here
     while ind1 < len1:
         file1.seek(indexOfIndex1[ind1][1])
-        line = file1.readline()
-        print(line, file = file3, end = '')
+        line = file1.readline().strip()
+        print(line, file = file3)
         ind1 += 1
     while ind2 < len2:
         file1.seek(indexOfIndex2[ind2][1])
-        line = file2.readline()
-        print(line, file = file3, end = '')
+        line = file2.readline().strip()
+        print(line, file = file3)
         ind2 += 1
     file1.close()
     file2.close()
@@ -342,6 +357,23 @@ def mergeIndexes(partialNum) -> None:
             curTemp = partialIndString + str(x)
         else:
             curTemp = mergePartials(curTemp, (partialIndString+str(x)), x)
+    #Build final index and update tfidf scores
+    indexOfIndex = createIndexofIndexes(curTemp)
+    file1 = open(curTemp, 'r')
+    file2 = open("FinalIndex", 'w')
+    for term, num in indexOfIndex.items():
+        file1.seek(num)
+        line = file1.readline().strip()
+        term, posts = parseStr(line)
+        calcTFIDF(posts)
+        print(term, end = '', file = file2)
+        for post in posts:
+            print(str(post), end = '', file = file2)
+        print(file=file2)
+    file1.close()
+    file2.close()
+
+
 
 def build_index():
     global curNum
