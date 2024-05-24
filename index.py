@@ -28,17 +28,23 @@ curNum = 0
 
 #Posting class based on slides
 class Posting:
-    def __init__(self, docid, tfidf, fields , positions):
+    def __init__(self, docid, tfidf, fields, positions, count):
         self.docid = int(docid)
         self.tfidf = float(tfidf) # use freq counts for now
         self.positions = positions
         self.fields = fields
+        if len(fields) == 0:
+            fields["h1"] = 0
+            fields["h2"] = 0
+            fields["h3"] = 0
+            fields["strong"] = 0
+            fields["b"] = 0
+            fields["title"] = 0
+        self.count = int(count)
     #String print for our posting object
     def __str__(self):
-        postStr = f':{self.docid}|{self.tfidf}|'
-        if self.fields == []:
-            postStr = postStr + 'None'
-        for x in self.fields:
+        postStr = f':{self.docid}|{self.tfidf}|{self.count}|'
+        for x in self.fields.values():
             postStr = postStr + ' ' +  str(x)
         postStr = postStr + '|'
         if self.positions == []:
@@ -48,10 +54,8 @@ class Posting:
         return postStr
     #String representation of posting object
     def __repr__(self):
-        postStr = f':{self.docid}|{self.tfidf}|'
-        if self.fields == []:
-            postStr = postStr + 'None'
-        for x in self.fields:
+        postStr = f':{self.docid}|{self.tfidf}|{self.count}|'
+        for x in self.fields.values():
             postStr = postStr + ' ' +  str(x)
         postStr = postStr + '|'
         if self.positions == []:
@@ -61,8 +65,9 @@ class Posting:
         return postStr
     #Increment count and position list
     def addCount(self, pos):
-        self.tfidf += 1
-        self.positions.append(pos)
+        self.count += 1
+        #Uncomment when doing positions
+        #self.positions.append(pos)
     #Returns doc number of our post
     def getDoc(self):
         return self.docid
@@ -71,11 +76,14 @@ class Posting:
         return self.tfidf
     #Adds the val to fields for the posting object
     def addField(self, val):
-        self.fields.append(val)
-        self.tfidf += 1
+        self.fields[val] += 1
+        self.count += 1
     #Updates the tfidf value to be newVal
     def updateTfidf(self, newVal):
         self.tfidf = newVal
+    #Returns tfidf of our post
+    def getCount(self):
+        return self.count
 
 #Parses a line of input from the index and returns the corresponding term and list of postings that it parses and recreates
 def parseStr(line):
@@ -98,11 +106,12 @@ def parsePost(postStr):
     #Gets docid and tfidf by just getting the index because they're just an int
     docId = attr[0]
     tfidf = attr[1]
+    count = attr[2]
     #Parses the list string to get the list values for fields and pos
-    fields = parseAttrList(attr[2])
-    pos = parseAttrList(attr[3])
+    fields = parseDict(attr[3])
+    pos = parseAttrList(attr[4])
     #Creates and returns posting object
-    return (Posting(docId, tfidf, fields, pos))
+    return (Posting(docId, tfidf, fields, pos, count))
 
 #Parses a list string and returns a recreated list
 def parseAttrList(listStr):
@@ -118,6 +127,18 @@ def parseAttrList(listStr):
             attrList.append(x)
     #return the list
     return attrList
+
+#Parses the given string to list by splitting it and assigning each split number to corresponding field
+def parseDict(dicStr):
+    counts = dicStr.split()
+    fields = {}
+    fields["h1"] = counts[0]
+    fields["h2"] = counts[1]
+    fields["h3"] = counts[2]
+    fields["strong"] = counts[3]
+    fields["b"] = counts[4]
+    fields["title"] = counts[5]
+    return fields
 
 #Creates an index of indexes given the partial index name
 def createIndexofIndexes(filename):
@@ -156,7 +177,8 @@ def computeWordFrequencies(tokens) -> dict():
     for t in range(len(tokens)):
         tok = tokens[t]
         if tok not in freq:
-            freq[tok] = Posting(curNum, 1, [], [t])
+            #freq[tok] = Posting(curNum, 0, {}, [t], 1)
+            freq[tok] = Posting(curNum, 0, {}, [], 1)
         else:
             freq[tok].addCount(t)
     return freq
@@ -211,11 +233,6 @@ def partialIndex(partialNum) ->None:
     file.close()
     return
 
-#Given the file names of the files that need to be merged, merges them into a partial index then returns the filename
-#of the merged partials, creates the filename based on the tempIndexNum parameter that is passed in
-def mergePartials(toMerge1, toMerge2, tempIndexNum) -> str:
-    return
-
 #Attempts to save seem our index using pickle
 def pickleDocMap() ->None:
     global docMap
@@ -247,7 +264,8 @@ def addFields(postings, soup, field, stemmer):
             if tok in postings:
                 postings[tok].addField(field)
             else:
-                postings[tok] = Posting(curNum, 1, [field], [])
+                postings[tok] = Posting(curNum, 0, {}, [], 0)
+                postings[tok].addField(field)
 
 #Function that returns a bool indicating if token is valid or not (all alphanumeric)
 def tokenValid2(token) -> bool:
@@ -275,12 +293,13 @@ def calcTFIDF(postings):
     total_contain_t = len(postings)
 
     for post in postings:
-        post_freq = post.tfidf
+        post_freq = post.getCount()
         tfidf = (1 + math.log10(post_freq)) * (math.log10(curNum/total_contain_t))
         post.updateTfidf(tfidf)
-
     return
 
+#Given the file names of the files that need to be merged, merges them into a partial index then returns the filename
+#of the merged partials, creates the filename based on the tempIndexNum parameter that is passed in
 def mergePartials(toMerge1, toMerge2, tempIndexNum) -> str:
     #Get index of indexes for each partial so it's easier to grab the item from the file
     indexOfIndex1 = [(x,y) for x,y in createIndexofIndexes(toMerge1).items()]
@@ -373,8 +392,6 @@ def mergeIndexes(partialNum) -> None:
     file1.close()
     file2.close()
 
-
-
 def build_index():
     global curNum
     global index
@@ -416,6 +433,7 @@ def build_index():
                         addFields(postings, parsed_text, 'h2', ps)
                         addFields(postings, parsed_text, 'h3', ps)
                         addFields(postings, parsed_text, 'strong', ps)
+                        addFields(postings, parsed_text, 'title', ps)
                         for term, post in postings.items():
                             #If not yet added but the term exist
                             if term in index:
@@ -428,7 +446,7 @@ def build_index():
                 print(f"Index length is: {len(index)}", file = record)
                 record.close()
                 curNum += 1
-                if curNum % 30 == 0 and curNum != 0:
+                if curNum % 20000 == 0 and curNum != 0:
                     partialIndex(partialInd)
                     partialInd += 1
                     index.clear()
