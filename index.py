@@ -398,7 +398,7 @@ def build_index():
     partialInd = 0
     terms = set()
     #Opens zip file
-    zip = zipfile.ZipFile("DEVTest.zip", "r")
+    zip = zipfile.ZipFile("developer.zip", "r")
     #Iterates through all file in zip file
     for file in zip.infolist():
         #Checks its not a directory
