@@ -2,25 +2,30 @@ import sys
 import index
 import pickle
 import time
-from index import Posting, tokenize
+from index import Posting, tokenize, parseStr
 from nltk.stem import PorterStemmer
 
 #Extracts the boolean query results from index
-def extractFromIndex(tokens) -> list:
-    global index
-    results = []
+def extractFromIndex(tokens, indOfInd) -> list:
+    file = open("FinalIndex")
+    results = {}
     #Checks to see if all query words are in index
     for x in tokens:
         #Return [] if the token doesn't exist for boolean search
-        if x not in index:
-            return []
-        else:
-            if results == []:
-                #If results are empty, its equal to first set of docs it sees
-                results = [post.getDoc() for post in index[x]]
-            else:
-                #Else results is the intersection
-                results = findIntersection(results, [post.getDoc() for post in index[x]])
+        if x not in results:
+            results[x] = []
+            if x in indOfInd:
+                file.seek(indOfInd[x])
+                line = file.readline()
+                term, posts = parseStr(line)
+                results[x] = posts
+                # if results == []:
+                #     #If results are empty, its equal to first set of docs it sees
+                #     results = [post.getDoc() for post in index[x]]
+                # else:
+                #     #Else results is the intersection
+                #     results = findIntersection(results, [post.getDoc() for post in index[x]])
+    file.close()
     return results
 
 #Returns a list of the docIDs in common from the two list of ids
@@ -57,13 +62,26 @@ def relevance(tokens, docid) -> int:
 
 #Returns results sorted by relevance
 def resultsByRelevance(tokens, results) -> list:
-    return sorted(results, key=(lambda x : (-relevance(tokens, x))) )
+    scores = {}
+    termCnt = 0
+    for term, posts in results.items():
+        for post in posts:
+            docId = post.getDoc()
+            if docId not in scores:
+                scores[docId] = [0, 0]
+            scores[docId][0] += post.getTfidf()
+            scores[docId][1] += 1 << termCnt
+        termCnt += 1
+    return sorted(scores.keys(), key=(lambda x : -scores[x][0]) )
 
 if __name__ == "__main__":
-    global index
+    # global index
     global docMap
-    file = open("pickleIndex", "rb")
-    index = pickle.load(file)
+    # file = open("pickleIndex", "rb")
+    # index = pickle.load(file)
+    # file.close()
+    file = open("indexOfIndexes", 'rb')
+    indOfInd = pickle.load(file)
     file.close()
     file = open("pickleDocMap", "rb")
     docMap = pickle.load(file)
@@ -79,11 +97,11 @@ if __name__ == "__main__":
         #Tokenize and stem query
         ps = PorterStemmer()
         tokens = [ps.stem(x) for x in tokenize(query)]
-        results = extractFromIndex(tokens)
+        results = extractFromIndex(tokens, indOfInd)
         #show results
         if results != []:
             print(f"Documents matching query '{query}':")
-            sortedResults = resultsByRelevance(tokens, results)
+            sortedResults = resultsByRelevance(tokens, results)[:10]
             for x in sortedResults:
                 print(f'Docid: {x}\nURL: {docMap[x]}')
         else:
