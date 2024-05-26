@@ -461,3 +461,7 @@ def build_index():
     stats.close()
 if __name__ == "__main__":
     build_index()
+    indOfInd = createIndexofIndexes("FinalIndex")
+    file = open("indexOfIndexes", "wb")
+    pickle.dump(indOfInd, file)
+    file.close()
