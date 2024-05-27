@@ -85,6 +85,228 @@ class Posting:
     def getCount(self):
         return self.count
 
+
+#Get a 64 bit hash for the passed in list of tokens
+def token_hash(tokens):
+    hashedToks = []
+    for token in tokens:
+        hashVal = hashlib.md5(token.encode('utf-8')).digest()
+        #Get only 64 bits of the hash as per prof reccomendation
+        hashedToks.append(hashVal[:8])
+    return hashedToks
+
+
+#First generates hashes of tokens, then count the number of 1's and 0's in each column of each token hash, with 0's weighed -1, and 1's 1.
+#Final count if positive makes the bit in the final hash at that position 1, else makes it 0
+def makeSimhash(tokens):
+    hashes = token_hash(tokens)
+    finHash = 0
+    #For each column, count zeroes and ones and use the sum value to decide on the corresponding bit for
+    #hash of the page
+    for x in range(0, 64):
+        count = 0
+        for hashVal in hashes:
+            #Have to reverse the binary string we get here because we are reading it left to right
+            #but trying to construct it right to left
+            hashBin = bin(int.from_bytes(hashVal, 'little')).replace("0b","")
+            hashBin = hashBin[::-1]
+            #Ensure we have a digit at the place in the string if we are checking
+            if x<len(hashBin) and hashBin[x] == '1':
+                count = count + 1
+            else:
+                count = count - 1
+        if count > 0:
+            finHash = finHash + (1<<x)
+    #Convert back to bytes since we seem to store hash as bytes by convention?
+    return finHash.to_bytes(8, 'little')
+
+
+#Returns the distance between hashes/number of bits where they are not the same
+def distance(hash1, hash2):
+    hash1 = int.from_bytes(hash1, 'little')
+    hash2 = int.from_bytes(hash2, 'little')
+    distance = bin(hash1 ^ hash2).count('1')
+    return distance
+
+
+#Compares URLs based on hash with previous urls, returning a bool determining if they are similar enough based on a threshold similarity value
+def detectSimilarUrl(url) ->bool:
+    global seenSimHashedUrls
+    tokens, size = tokenize(url)
+    simhash_url = makeSimhash(tokens)
+    if any(distance(simhash_url, i) < 4 for i in seenSimHashedUrls):
+        return True
+    seenSimHashedUrls.add(simhash_url)
+    pickleSaveSeenSimUrls()
+    return False
+
+#Returns hash based on tokens, used to detect exact duplicates
+def compute_hash(tokens):
+    hash = hashlib.sha256()
+    content = ' '.join(tokens)
+    hash.update(content.encode('utf-8'))
+    return hash.hexdigest()
+
+#Return if list of tokens has been seen before
+def exact_duplicate_detection(tokens):
+    global seenHashes
+    page_hash = compute_hash(tokens)
+    if page_hash in seenHashes:
+        return True
+    seenHashes.add(page_hash)
+    pickleSaveSeenHash()
+    return False
+
+#Compute simhash of our file using the passed in dictionary and returns a bool indicating if it was similar to previous ones or not
+def simhashClose(tokens):
+    global seenSimHash_values
+    simhash_val = makeSimhash(tokens)
+    if any(distance(simhash_val, i) < 4 for i in seenSimHash_values):
+        return True
+    seenSimHash_values.add(simhash_val)
+    pickleSaveSimHash()
+    return False
+
+#Attempts to load all our global values from their stored pickle files if they exist, otherwise gives them default values.
+def pickleLoad() ->None:
+    pickleLoadSeenUrls()
+    pickleLoadSimHash()
+    pickleLoadWords()
+    pickleLoadCrawledUrls()
+    pickleLoadSeenSimUrls()
+    pickleLoadSeenHash()
+    return
+
+#Attempts to load seenurls from pickle file
+def pickleLoadSeenUrls():
+    file = None
+    try:
+        global seenURLs
+        file = open("pickleSeenUrls", "rb")
+        seenURLs = pickle.load(file)
+    except:
+        pass
+    finally:
+        if file != None:
+            file.close()
+        return
+
+def pickleLoadSeenSimUrls():
+    file = None
+    try:
+        global seenSimHashedUrls
+        file = open("pickleSeenSimUrls", "rb")
+        seenSimHashedUrls = pickle.load(file)
+    except:
+        pass
+    finally:
+        if file != None:
+            file.close()
+        return
+
+def pickleLoadSeenHash():
+    file = None
+    try:
+        global seenHashes
+        file = open("pickleSeenHashes", "rb")
+        seenHashes = pickle.load(file)
+    except:
+        pass
+    finally:
+        if file != None:
+            file.close()
+        return
+
+#Attempts to load craweldurls from pickle file
+def pickleLoadCrawledUrls():
+    file = None
+    try:
+        global crawledURLs
+        file = open("pickleCrawledUrls", "rb")
+        crawledURLs = pickle.load(file)
+    except:
+        pass
+    finally:
+        if file != None:
+            file.close()
+        return
+
+#Attempts to load simhash list from pickle file
+def pickleLoadSimHash():
+    file = None
+    try:
+        global seenSimHash_values
+        file = open("pickleSeenSimhash", "rb")
+        seenSimHash_values = pickle.load(file)
+    except:
+        pass
+    finally:
+        if file != None:
+            file.close()
+        return
+
+#Attempts to load words from pickle file
+def pickleLoadWords():
+    file = None
+    try:
+        global words
+        file = open("pickleWords", "rb")
+        words = pickle.load(file)
+    except:
+        pass
+    finally:
+        if file != None:
+            file.close()
+        return
+
+#Attempts to save all our words dictionary into their pickle file
+def pickleSaveWords() ->None:
+    global words
+    file = open("pickleWords", "wb")
+    pickle.dump(words, file)
+    file.close
+    return
+
+#Attempts to save all list of seen simhashes into their pickle file
+def pickleSaveSimHash() ->None:
+    global seenSimHash_values
+    file = open("pickleSeenSimhash", "wb")
+    pickle.dump(seenSimHash_values, file)
+    file.close
+    return
+
+#Attempts to save set of seen URLs into their pickle file
+def pickleSaveUrls() ->None:
+    global seenURLs
+    file = open("pickleSeenUrls", "wb")
+    pickle.dump(seenURLs, file)
+    file.close
+    return
+
+#Attempts to save set of seen URLs into their pickle file
+def pickleSaveCrawls() ->None:
+    global crawledURLs
+    file = open("pickleCrawledUrls", "wb")
+    pickle.dump(crawledURLs, file)
+    file.close
+    return
+
+#Attempts to save seem simhash values of urls
+def pickleSaveSeenSimUrls() ->None:
+    global seenSimHashedUrls
+    file = open("pickleSeenSimUrls", "wb")
+    pickle.dump(seenSimHashedUrls, file)
+    file.close
+    return
+
+#Attempts to save seem simhash values of urls
+def pickleSaveSeenHash() ->None:
+    global seenHashes
+    file = open("pickleSeenHashes", "wb")
+    pickle.dump(seenHashes, file)
+    file.close
+    return
+
 #Parses a line of input from the index and returns the corresponding term and list of postings that it parses and recreates
 def parseStr(line):
     remadePosts = []
@@ -408,8 +630,11 @@ def build_index():
             file = json.load(doc)
             #Checks to see if it has a url field
             if file.get('url'):
-                #Maps url to docid
-                docMap[curNum] = (file.get('url'))
+                if (file.get('url') in seenURLs) or (detectSimilarUrl(file.get('url'))):
+                    continue
+                elif simhashClose(tokens) or exact_duplicate_detection(tokens):
+                    continue
+
                 #Checks if there is content
                 if file.get('content'):
                     #Parses it
@@ -427,6 +652,9 @@ def build_index():
                         #Nltk tokenizer not sure if we're going to keep
                         #tokens = [ps.stem(x) for x in removeClutter(word_tokenize(text))]
                         tokens = [ps.stem(x) for x in tokenize(text)]
+
+                        if simhashClose(tokens) or exact_duplicate_detection(tokens):
+                            continue
                         postings = computeWordFrequencies(tokens)
                         addFields(postings, parsed_text, 'b', ps)
                         addFields(postings, parsed_text, 'h1', ps)
@@ -440,6 +668,9 @@ def build_index():
                                 index[term].append(post)
                             elif term not in index:
                                 index[term] = [post]
+
+                #Maps url to docid
+                docMap[curNum] = (file.get('url'))
                 record = open("record.txt", "a")
                 print(f"Current doc is {curNum}", file = record)
                 print(f"Posting list for it is: {postings.keys()}", file = record)
