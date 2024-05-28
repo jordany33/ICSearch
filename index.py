@@ -632,8 +632,6 @@ def build_index():
             if file.get('url'):
                 if (file.get('url') in seenURLs) or (detectSimilarUrl(file.get('url'))):
                     continue
-                elif simhashClose(tokens) or exact_duplicate_detection(tokens):
-                    continue
 
                 #Checks if there is content
                 if file.get('content'):
@@ -649,12 +647,13 @@ def build_index():
                         #Gets tokens then uses then for index, adding our cur doc to the index[token] for each token if not already there
                         ps = PorterStemmer()
                         text = parsed_text.get_text()
+                        simTokens = tokenize(text)
+                        if simhashClose(simTokens) or exact_duplicate_detection(simTokens):
+                            continue
+
                         #Nltk tokenizer not sure if we're going to keep
                         #tokens = [ps.stem(x) for x in removeClutter(word_tokenize(text))]
                         tokens = [ps.stem(x) for x in tokenize(text)]
-
-                        if simhashClose(tokens) or exact_duplicate_detection(tokens):
-                            continue
                         postings = computeWordFrequencies(tokens)
                         addFields(postings, parsed_text, 'b', ps)
                         addFields(postings, parsed_text, 'h1', ps)
