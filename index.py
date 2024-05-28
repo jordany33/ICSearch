@@ -40,6 +40,9 @@ class Posting:
             fields["strong"] = 0
             fields["b"] = 0
             fields["title"] = 0
+        else:
+            for x in fields.keys():
+                fields[x] = int(fields[x])
         self.count = int(count)
     #String print for our posting object
     def __str__(self):
@@ -74,6 +77,9 @@ class Posting:
     #Returns tfidf of our post
     def getTfidf(self):
         return self.tfidf
+    #Return total fields count for the term for this posting
+    def getImpTxt(self):
+        return sum(list(self.fields.values()))
     #Adds the val to fields for the posting object
     def addField(self, val):
         self.fields[val] += 1

@@ -49,8 +49,8 @@ def findIntersection(list1, list2) -> list:
             ind2 += 1
     return common
 
-#Returns relevance of document given weights, list of tfidfs, and the square root squared sum of weights
-def relevance(weights, docTfidfs, qSq) -> int:
+#Returns relevance of document given weights, list of tfidfs, and the square root squared sum of weights, and a promoter value
+def relevance(weights, docTfidfs, qSq, pVal) -> int:
     score = 0
     #The variable to keep track of the sqrt of the sum of squared tfids
     sqrtSqaureTfidf = 0
@@ -64,7 +64,10 @@ def relevance(weights, docTfidfs, qSq) -> int:
         prod += weights[x]*docTfidfs[x]
     #Square root the sum of squares
     sqrtSqaureTfidf = math.sqrt(sqrtSqaureTfidf)
-    score = score + (prod/(sqrtSqaureTfidf*qSq))
+    if pVal > 0:
+        score = 0.685*(score+(0.35*math.log(pVal))) + (1-0.685)*(prod/(sqrtSqaureTfidf*qSq))
+    else:
+        score = 0.685*(score) + (1-0.685)*(prod/(sqrtSqaureTfidf*qSq))
     return score
 
 #Returns results sorted by relevance
@@ -83,14 +86,15 @@ def resultsByRelevance(weights, results) -> list:
         for post in posts:
             docId = post.getDoc()
             if docId not in scores:
-                scores[docId] = []
+                scores[docId] = [[], 0]
                 #Add in the necessary number of zeroes to build initial list
                 for x in range(totTerms):
-                    scores[docId].append(0)
+                    scores[docId][0].append(0)
             #Update list at index if valid
-            scores[docId][termCnt] = post.getTfidf()
+            scores[docId][0][termCnt] = post.getTfidf()
+            scores[docId][1] += post.getImpTxt()*post.getTfidf()
         termCnt += 1
-    return sorted(scores.keys(), key=(lambda x : -relevance(weights, scores[x], sqrtSquareSumWeights)) )
+    return sorted(scores.keys(), key=(lambda x : -relevance(weights, scores[x][0], sqrtSquareSumWeights, scores[x][1])) )
 
 #Given list of tokens, goes through them and returns a dict representing query and their weights, currently using freq in query
 def makeQueryWeights(tokens):
