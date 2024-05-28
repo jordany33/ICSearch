@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Engine</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100">
+        <h1 class="display-4 mb-4">Search Engine</h1>
+        <form action="/results" method="post" class="w-75">
+            <div class="input-group search-box">
+                <input type="text" name="query" class="form-control search-input" placeholder="Search for content" aria-label="Search query">
+                <div class="input-group-append">
+                    <button type="submit" class="btn btn-primary search-button">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
