@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Results</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100">
+        <h1 class="display-4 text-center mb-4">Search Results</h1>
+        <h2 class="text-center mb-4">for "{{ query }}"</h2>
+        {% if documents %}
+            <ul class="list-group">
+                {% for doc in documents %}
+                    <li class="list-group-item">
+                        <a href="{{ doc.url }}" target="_blank">{{ doc.url }}</a> (DocID: {{ doc.docid }})
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-center mt-4">Your search did not match any documents.</p>
+        {% endif %}
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-secondary">Return to search</a>
+        </div>
+    </div>
+</body>
+</html>
