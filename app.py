@@ -7,10 +7,10 @@ from search import makeQueryWeights, extractFromIndex, resultsByRelevance
 app = Flask(__name__)
 
 with open("indexOfIndexes", 'rb') as file:
-    indOfInd = pickle.load(file)
+    i_of_i = pickle.load(file)
 
 with open("pickleDocMap", 'rb') as file:
-    docMap = pickle.load(file)
+    doc_map = pickle.load(file)
 
 @app.route('/')
 def home():
@@ -22,11 +22,11 @@ def results():
     porter_stemmer = PorterStemmer()
     tokens = [porter_stemmer.stem(x) for x in tokenize(query)]
     weights = makeQueryWeights(tokens)
-    results = extractFromIndex(weights.keys(), indOfInd)
+    results = extractFromIndex(weights.keys(), i_of_i)
     
     if any(x != [] for x in results.values()):
         sorted_results = resultsByRelevance(list(weights.values()), results)[:10]
-        documents = [{'docid': x, 'url': docMap[x]} for x in sorted_results]
+        documents = [{'docid': x, 'url': doc_map[x]} for x in sorted_results]
     else:
         documents = []
 
