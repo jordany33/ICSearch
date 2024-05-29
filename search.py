@@ -6,9 +6,12 @@ import math
 from index import Posting, tokenize, parseStr
 from nltk.stem import PorterStemmer
 
+#The list of processed stopwords using the tokenizer and the stemmer
+stopWords = ['a', 'about', 'abov', 'after', 'again', 'against', 'all', 'am', 'an', 'and', 'ani', 'are', 'aren', 't', 'as', 'at', 'be', 'becaus', 'been', 'befor', 'be', 'below', 'between', 'both', 'but', 'by', 'can', 't', 'cannot', 'could', 'couldn', 't', 'did', 'didn', 't', 'do', 'doe', 'doesn', 't', 'do', 'don', 't', 'down', 'dure', 'each', 'few', 'for', 'from', 'further', 'had', 'hadn', 't', 'ha', 'hasn', 't', 'have', 'haven', 't', 'have', 'he', 'he', 'd', 'he', 'll', 'he', 's', 'her', 'here', 'here', 's', 'her', 'herself', 'him', 'himself', 'hi', 'how', 'how', 's', 'i', 'i', 'd', 'i', 'll', 'i', 'm', 'i', 've', 'if', 'in', 'into', 'is', 'isn', 't', 'it', 'it', 's', 'it', 'itself', 'let', 's', 'me', 'more', 'most', 'mustn', 't', 'my', 'myself', 'no', 'nor', 'not', 'of', 'off', 'on', 'onc', 'onli', 'or', 'other', 'ought', 'our', 'our', 'ourselv', 'out', 'over', 'own', 'same', 'shan', 't', 'she', 'she', 'd', 'she', 'll', 'she', 's', 'should', 'shouldn', 't', 'so', 'some', 'such', 'than', 'that', 'that', 's', 'the', 'their', 'their', 'them', 'themselv', 'then', 'there', 'there', 's', 'these', 'they', 'they', 'd', 'they', 'll', 'they', 're', 'they', 've', 'thi', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 'veri', 'wa', 'wasn', 't', 'we', 'we', 'd', 'we', 'll', 'we', 're', 'we', 've', 'were', 'weren', 't', 'what', 'what', 's', 'when', 'when', 's', 'where', 'where', 's', 'which', 'while', 'who', 'who', 's', 'whom', 'whi', 'whi', 's', 'with', 'won', 't', 'would', 'wouldn', 't', 'you', 'you', 'd', 'you', 'll', 'you', 're', 'you', 've', 'your', 'your', 'yourself', 'yourselv']
+
 #Extracts the boolean query results from index
-def extractFromIndex(tokens, indOfInd) -> list:
-    file = open("FinalIndex")
+def extractFromIndex(tokens, indOfInd, indexName) -> list:
+    file = open(indexName)
     results = {}
     #Checks to see if all query words are in index
     for x in tokens:
@@ -98,33 +101,49 @@ def resultsByRelevance(weights, results) -> list:
 
 #Given list of tokens, goes through them and returns a dict representing query and their weights, currently using freq in query
 def makeQueryWeights(tokens):
+    #Count stopwords to determine if it's fine to remove them later or not
+    stopCount = 0
     weights = {}
     #Iterate through tokens, if not yet in dict, initialize the count to 1, otherwise increment the count by 1
     for t in tokens:
+        if t in stopWords:
+            stopCount += 1
         if t not in weights:
             weights[t] = 1
         else:
-            weights[t] += 1
+            weights[t] += 1y
+    if len(tokens) > 0 and (stopCount/len(tokens)) <= 0.5:
+        for k in list(weights.keys()):
+            if k in stopWords:
+                del weights[k]
     return weights
 
 if __name__ == "__main__":
-    # global index
-    global docMap
-    # file = open("pickleIndex", "rb")
-    # index = pickle.load(file)
-    # file.close()
-    file = open("indexOfIndexes", 'rb')
+    #Decide which index of index and index to use based on if a champion list argument is given
+    indexOfIndexName = "indexOfIndexes"
+    indexName = "FinalIndex"
+    #Construct string based on arguments
+    if len(sys.argv)==2:
+        indexOfIndexName = indexOfIndexName + sys.argv[1]
+        indexName = indexName + sys.argv[1]
+    #Open and load index of index
+    file = open(indexOfIndexName, 'rb')
     indOfInd = pickle.load(file)
     file.close()
+    #Open and load docMap
     file = open("pickleDocMap", "rb")
     docMap = pickle.load(file)
     file.close()
+    #Notfiy when setup finishes
     print('Done loading')
+    print()
+    #While they don't quit keep prompting them for query and give results
     while True:
         query = input("Enter query (or type 'exit' to quit prompt): ").strip().lower()
-        
+        #If they quit end the loop
         if query == 'exit':
             break
+        #Keep track of start of query input
         start_time = time.time()
         #process the query here
         #Tokenize and stem query
@@ -133,16 +152,41 @@ if __name__ == "__main__":
         #Calculate weight of tokens in query
         weights = makeQueryWeights(tokens)
         #Get relevant results
-        results = extractFromIndex(weights.keys(), indOfInd)
+        results = extractFromIndex(weights.keys(), indOfInd, indexName)
         #show results
+        relevantResults = None
+        curPage = 1
         if any(x != [] for x in results.values()):
+            print()
+            print("Currently on page 0")
             print(f"Documents matching query '{query}':")
             #Get sorted results and print top 10
-            sortedResults = resultsByRelevance(list(weights.values()), results)
-            if len(sortedResults)>10:
-                sortedResults = sortedResults[:10]
+            relevantResults = resultsByRelevance(list(weights.values()), results)
+            if len(relevantResults)>10:
+                sortedResults = relevantResults[:10]
             for x in sortedResults:
                 print(f'Docid: {x}\nURL: {docMap[x]}')
         else:
             print(f"No documents found for query '{query}'")
-        print("--- %s seconds ---" % (time.time() - start_time))
+        print("Time passed since queried: %s seconds" % (time.time() - start_time))
+        print()
+        if any(x != [] for x in results.values()):
+            while True:
+                action = input("To get next and previous pages enter 'next' or 'prev', to enter new query enter 'search': ").strip().lower()
+                if action == 'search':
+                    print()
+                    break
+                elif action == 'prev' and curPage>1:
+                    curPage -= 1
+                    print("Currently on page",curPage)
+                    sortedResults = relevantResults[(curPage-1)*10:curPage*10]
+                    for x in sortedResults:
+                        print(f'Docid: {x}\nURL: {docMap[x]}')
+                    print()
+                elif action == 'next' and (curPage)*10 < len(relevantResults):
+                    curPage += 1
+                    print("Currently on page",curPage)
+                    sortedResults = relevantResults[(curPage-1)*10:curPage*10]
+                    for x in sortedResults:
+                        print(f'Docid: {x}\nURL: {docMap[x]}')
+                    print()
