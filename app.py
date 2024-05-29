@@ -1,3 +1,4 @@
+import sys
 from flask import Flask, request, render_template
 from nltk.stem import PorterStemmer
 import pickle
@@ -5,8 +6,15 @@ from index import tokenize
 from search import makeQueryWeights, extractFromIndex, resultsByRelevance
 
 app = Flask(__name__)
+#Decide which index of index and index to use based on if a champion list argument is given
+indexOfIndexName = "indexOfIndexes"
+indexName = "FinalIndex"
+#Construct string based on arguments
+if len(sys.argv)==2:
+    indexOfIndexName = indexOfIndexName + sys.argv[1]
+    indexName = indexName + sys.argv[1]
 
-with open("indexOfIndexes", 'rb') as file:
+with open(indexOfIndexName, 'rb') as file:
     i_of_i = pickle.load(file)
 
 with open("pickleDocMap", 'rb') as file:
@@ -32,7 +40,7 @@ def results():
     porter_stemmer = PorterStemmer()
     tokens = [porter_stemmer.stem(x) for x in tokenize(query)]
     weights = makeQueryWeights(tokens)
-    results = extractFromIndex(weights.keys(), i_of_i)
+    results = extractFromIndex(weights.keys(), i_of_i, indexName)
 
     if any(x != [] for x in results.values()):
         sorted_results = resultsByRelevance(list(weights.values()), results)
