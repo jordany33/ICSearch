@@ -37,7 +37,6 @@ The project consists of the following files:
 2. Enter your search query in the input box on the homepage where it says, "Search for content," and click the search button.
 3. View the search results on the results page. Click on the links to view the documents. Click the 'Next' and 'Previous' buttons to navigate the results pages. 
 
-
 ## File Descriptions
 
 ### Home Page (`home.html`)
