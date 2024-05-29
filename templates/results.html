@@ -23,6 +23,14 @@
             <p class="text-center mt-4">Your search did not match any documents.</p>
         {% endif %}
         <div class="text-center mt-4">
+            {% if prev_page %}
+                <a href="/results?page={{ prev_page }}&query={{ query }}" class="btn btn-secondary">Previous</a>
+            {% endif %}
+            {% if next_page %}
+                <a href="/results?page={{ next_page }}&query={{ query }}" class="btn btn-secondary">Next</a>
+            {% endif %}
+        </div>
+        <div class="text-center mt-4">
             <a href="/" class="btn btn-secondary">Return to search</a>
         </div>
     </div>
