@@ -138,7 +138,9 @@ if __name__ == "__main__":
         if any(x != [] for x in results.values()):
             print(f"Documents matching query '{query}':")
             #Get sorted results and print top 10
-            sortedResults = resultsByRelevance(list(weights.values()), results)[:10]
+            sortedResults = resultsByRelevance(list(weights.values()), results)
+            if len(sortedResults)>10:
+                sortedResults = sortedResults[:10]
             for x in sortedResults:
                 print(f'Docid: {x}\nURL: {docMap[x]}')
         else:

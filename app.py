@@ -25,7 +25,9 @@ def results():
     results = extractFromIndex(weights.keys(), i_of_i)
     
     if any(x != [] for x in results.values()):
-        sorted_results = resultsByRelevance(list(weights.values()), results)[:10]
+        sorted_results = resultsByRelevance(list(weights.values()), results)
+        if len(sorted_results) > 10:
+            sorted_results = sorted_results[:10]
         documents = [{'docid': x, 'url': doc_map[x]} for x in sorted_results]
     else:
         documents = []
