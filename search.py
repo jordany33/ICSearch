@@ -111,7 +111,7 @@ def makeQueryWeights(tokens):
         if t not in weights:
             weights[t] = 1
         else:
-            weights[t] += 1y
+            weights[t] += 1
     if len(tokens) > 0 and (stopCount/len(tokens)) <= 0.5:
         for k in list(weights.keys()):
             if k in stopWords:
