@@ -57,14 +57,14 @@ def results():
         total_pages = 0
 
     response_time = (time.time() - start_time) * 1000 
-    current_page_count = len(paginated_results)
+    curr_page_count = len(paginated_results)
 
     next_page = page + 1 if end < total_results else None
     prev_page = page - 1 if start > 0 else None
 
     return render_template('results.html', query=query, documents=documents, response_time=response_time, 
                            next_page=next_page, prev_page=prev_page, current_page=page, total_pages=total_pages, 
-                           current_page_count=current_page_count, total_results=total_results)
+                           current_page_count=curr_page_count, total_results=total_results)
 
 if __name__ == "__main__":
     app.run(debug=True)
