@@ -1,19 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Define character encoding and title for the webpage -->
     <meta charset="UTF-8">
     <title>Search Engine</title>
+    <!-- Include Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Google Fonts for 'Roboto' font family -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Include styles.css file -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+    <!-- Container that centers content both vertically and horizontally -->
     <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100">
+        <!-- Main heading -->
         <h1 class="display-4 mb-4">Search Engine</h1>
+        <!-- Form to handle search queries -->
         <form action="/results" method="post" class="w-75">
+            <!-- Group the search input and button together -->
             <div class="input-group search-box">
+                <!-- Input field for search queries -->
                 <input type="text" name="query" class="form-control search-input" placeholder="Search for content" aria-label="Search query">
+                <!-- Append search button to the search input box -->
                 <div class="input-group-append">
+                    <!-- Button to submit the search query -->
                     <button type="submit" class="btn btn-primary search-button">Search</button>
                 </div>
             </div>
