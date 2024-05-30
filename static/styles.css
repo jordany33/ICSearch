@@ -1,62 +1,75 @@
+/* Set the background color for the page and define the default font to be Roboto */
 body {
     background-color: #f5f5f5;
     font-family: 'Roboto', sans-serif;
 }
 
+/* Center the content */
 .container {
     text-align: center;
 }
 
+/* Set maximum width and center the search box horizontally */
 .search-box {
     max-width: 600px;
     margin: 0 auto;
 }
 
+/* Style the search input with height, font size, border color and width, 
+and outline/shadow removal */
 .search-input {
-    height: 50px;
-    font-size: 1.25rem;
-    border-radius: 25px 0 0 25px !important;
+    height: 50px; 
+    font-size: 1.25rem; 
+    border-radius: 25px 0 0 25px !important; 
     border: 2px solid #0064A4;
     box-shadow: none;
     outline: none; 
 }
 
+/* Style the search button with height, font size, border color and width,
+and outline/shadow removal*/
 .search-button {
-    height: 50px;
-    font-size: 1.25rem;
+    height: 50px; 
+    font-size: 1.25rem; 
     border-radius: 0 25px 25px 0 !important;
-    border: 2px solid #0064A4;
-    border-left: none;
+    border: 2px solid #0064A4; 
+    border-left: none; 
     outline: none; 
 }
 
+/* Change border color on focus for the search input box on home page */
 .search-input:focus {
     box-shadow: none;
-    border-color: #FFD200;
+    border-color: #FFD200; 
     outline: none; 
 }
 
+/* Remove box shadow and outline on focus for search button on home page */
 .search-button:focus {
-    box-shadow: none;
-    outline: none;
+    box-shadow: none; 
+    outline: none; 
 }
 
+/* Style primary search button with background and border color */
 .btn-primary {
-    background-color: #0064A4;
+    background-color: #0064A4; 
     border-color: #0064A4;
 }
 
+/* Change primary search button colors on hover */
 .btn-primary:hover {
-    background-color: #005093;
-    border-color: #005093;
+    background-color: #005093; 
+    border-color: #005093; 
 }
 
+/* Style secondary buttons on results page with the same colors as primary button */
 .btn-secondary {
-    background-color: #0064A4;
-    border-color: #0064A4;
+    background-color: #0064A4; 
+    border-color: #0064A4; 
 }
 
+/* Change secondary buttons' on results page colors on hover */
 .btn-secondary:hover {
     background-color: #005093;
-    border-color: #005093;
+    border-color: #005093; 
 }
