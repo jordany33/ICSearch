@@ -5,7 +5,6 @@ import hashlib
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin, urldefrag
 import zipfile
-from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem import PorterStemmer
 import json
 import pickle
@@ -22,9 +21,89 @@ alphaNum = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q",
 #How we track doc ID
 curNum = 0
 
-#When running first time only
-#nltk.download('punkt') 
+#Simhashing, seenURLs for dup URLs, and seenSimHash sets for near duplicate url and pages, then seen Hashes for exact duplicate content
+seenURLs = set()
+seenSimHash_values= set()
+seenSimHashedUrls = set()
+seenHashes = set()
 
+#Get a 64 bit hash for the passed in list of tokens
+def token_hash(tokens):
+    hashedToks = []
+    for token in tokens:
+        hashVal = hashlib.md5(token.encode('utf-8')).digest()
+        #Get only 64 bits of the hash as per prof reccomendation
+        hashedToks.append(hashVal[:8])
+    return hashedToks
+
+
+#First generates hashes of tokens, then count the number of 1's and 0's in each column of each token hash, with 0's weighed -1, and 1's 1.
+#Final count if positive makes the bit in the final hash at that position 1, else makes it 0
+def makeSimhash(tokens):
+    hashes = token_hash(tokens)
+    finHash = 0
+    #For each column, count zeroes and ones and use the sum value to decide on the corresponding bit for
+    #hash of the page
+    for x in range(0, 64):
+        count = 0
+        for hashVal in hashes:
+            #Have to reverse the binary string we get here because we are reading it left to right
+            #but trying to construct it right to left
+            hashBin = bin(int.from_bytes(hashVal, 'little')).replace("0b","")
+            hashBin = hashBin[::-1]
+            #Ensure we have a digit at the place in the string if we are checking
+            if x<len(hashBin) and hashBin[x] == '1':
+                count = count + 1
+            else:
+                count = count - 1
+        if count > 0:
+            finHash = finHash + (1<<x)
+    #Convert back to bytes since we seem to store hash as bytes by convention?
+    return finHash.to_bytes(8, 'little')
+
+
+#Returns the distance between hashes/number of bits where they are not the same
+def distance(hash1, hash2):
+    hash1 = int.from_bytes(hash1, 'little')
+    hash2 = int.from_bytes(hash2, 'little')
+    distance = bin(hash1 ^ hash2).count('1')
+    return distance
+
+
+#Compares URLs based on hash with previous urls, returning a bool determining if they are similar enough based on a threshold similarity value
+def detectSimilarUrl(url) ->bool:
+    global seenSimHashedUrls
+    tokens = tokenize(url)
+    simhash_url = makeSimhash(tokens)
+    if any(distance(simhash_url, i) < 3 for i in seenSimHashedUrls):
+        return True
+    seenSimHashedUrls.add(simhash_url)
+    return False
+
+#Returns hash based on tokens, used to detect exact duplicates
+def compute_hash(tokens):
+    hash = hashlib.sha256()
+    content = ' '.join(tokens)
+    hash.update(content.encode('utf-8'))
+    return hash.hexdigest()
+
+#Return if list of tokens has been seen before
+def exact_duplicate_detection(tokens):
+    global seenHashes
+    page_hash = compute_hash(tokens)
+    if page_hash in seenHashes:
+        return True
+    seenHashes.add(page_hash)
+    return False
+
+#Compute simhash of our file using the passed in dictionary and returns a bool indicating if it was similar to previous ones or not
+def simhashClose(tokens):
+    global seenSimHash_values
+    simhash_val = makeSimhash(tokens)
+    if any(distance(simhash_val, i) < 3 for i in seenSimHash_values):
+        return True
+    seenSimHash_values.add(simhash_val)
+    return False
 
 #Posting class based on slides
 class Posting:
@@ -247,13 +326,6 @@ def pickleDocMap() ->None:
     file.close()
     return
 
-#Function that returns a bool indicating if token is valid or not (not all non-alphanumeric)
-def tokenValid(token) -> bool:
-    for x in token:
-        if x in alphaNum:
-            return True
-    return False
-
 #Add fields to the posting objects given which fields to add
 def addFields(postings, soup, field, stemmer):
     #Gets all tags and texts associated with the given tag
@@ -272,25 +344,6 @@ def addFields(postings, soup, field, stemmer):
             else:
                 postings[tok] = Posting(curNum, 0, {}, [], 0)
                 postings[tok].addField(field)
-
-#Function that returns a bool indicating if token is valid or not (all alphanumeric)
-def tokenValid2(token) -> bool:
-    for x in token:
-        if x not in alphaNum:
-            return False
-    return True
-
-#Gets rid of tokens that are nonvalid according to token valid from the given list
-def removeClutter(tokens) -> list:
-    toRemove = []
-    #Gathers a list of invalid tokens to remove
-    for tok in tokens:
-        if not tokenValid(tok):
-            toRemove.append(tok)
-    #Removes tokens
-    for tok in toRemove:
-        tokens.remove(tok)
-    return tokens
 
 #Generates our tfIdf score for the given list of documents for a term, ie we call this on each posting list for each term
 def calcTFIDF(postings):
@@ -386,6 +439,7 @@ def mergeIndexes(partialNum) -> None:
     indexOfIndex = createIndexofIndexes(curTemp)
     file1 = open(curTemp, 'r')
     file2 = open("FinalIndex", 'w')
+    #Goes through index of indexes, gets line for each term, reads it, parases it, and updates the tfidf and prints updated line to new file
     for term, num in indexOfIndex.items():
         file1.seek(num)
         line = file1.readline().strip()
@@ -414,8 +468,10 @@ def build_index():
             file = json.load(doc)
             #Checks to see if it has a url field
             if file.get('url'):
-                #Maps url to docid
-                docMap[curNum] = (file.get('url'))
+                #Check for exact or near duplicate urls
+                # if (file.get('url') in seenURLs) or (detectSimilarUrl(file.get('url'))):
+                #     continue
+                # seenURLs.add(file.get('url'))
                 #Checks if there is content
                 if file.get('content'):
                     #Parses it
@@ -430,10 +486,13 @@ def build_index():
                         #Gets tokens then uses then for index, adding our cur doc to the index[token] for each token if not already there
                         ps = PorterStemmer()
                         text = parsed_text.get_text()
-                        #Nltk tokenizer not sure if we're going to keep
-                        #tokens = [ps.stem(x) for x in removeClutter(word_tokenize(text))]
+                        #Check for near or exact duplicate page content
+                        # simTokens = tokenize(text)
+                        # if simhashClose(simTokens) or exact_duplicate_detection(simTokens):
+                        #     continue
                         tokens = [ps.stem(x) for x in tokenize(text)]
                         postings = computeWordFrequencies(tokens)
+                        #Get the text with important fields and update them
                         addFields(postings, parsed_text, 'b', ps)
                         addFields(postings, parsed_text, 'h1', ps)
                         addFields(postings, parsed_text, 'h2', ps)
@@ -451,6 +510,8 @@ def build_index():
                 print(f"Posting list for it is: {postings.keys()}", file = record)
                 print(f"Index length is: {len(index)}", file = record)
                 record.close()
+                #Maps url to docid
+                docMap[curNum] = (file.get('url'))
                 curNum += 1
                 if curNum % 20000 == 0 and curNum != 0:
                     partialIndex(partialInd)
