@@ -12,6 +12,7 @@
         <h1 class="display-4 text-center mb-4">Search Results</h1>
         <h2 class="text-center mb-4">for "{{ query }}"</h2>
         <p class="text-center mb-4">Response time: {{ response_time }} milliseconds</p>
+        <p class="text-center mb-4">Displaying {{ current_page_count }} out of {{ total_results }} URLs on the current page.</p>
         {% if documents %}
             <ul class="list-group">
                 {% for doc in documents %}
@@ -24,6 +25,7 @@
             <p class="text-center mt-4">Your search did not match any documents.</p>
         {% endif %}
         <div class="text-center mt-4">
+            <p>Page {{ current_page }} of {{ total_pages }}</p>
             {% if prev_page %}
                 <a href="/results?page={{ prev_page }}&query={{ query }}" class="btn btn-secondary">Previous</a>
             {% endif %}
