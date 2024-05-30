@@ -11,6 +11,7 @@
     <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100">
         <h1 class="display-4 text-center mb-4">Search Results</h1>
         <h2 class="text-center mb-4">for "{{ query }}"</h2>
+        <p class="text-center mb-4">Response time: {{ response_time }} milliseconds</p>
         {% if documents %}
             <ul class="list-group">
                 {% for doc in documents %}
