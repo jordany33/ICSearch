@@ -12,6 +12,9 @@ import sys
 import io
 import math
 
+#When running first time only
+#nltk.download('punkt') 
+
 #Our index
 index = {}
 #Map of docid to URL
