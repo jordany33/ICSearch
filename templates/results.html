@@ -1,38 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Define character encoding and title for the webpage -->
     <meta charset="UTF-8">
     <title>Search Results</title>
+    <!-- Include Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Google Fonts for 'Roboto' font family -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Include styles.css file -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+    <!-- Contianer that centers content both vertically and horizontally -->
     <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100">
+        <!-- Main heading -->
         <h1 class="display-4 text-center mb-4">Search Results</h1>
+        <!-- Search query -->
         <h2 class="text-center mb-4">for "{{ query }}"</h2>
+        <!-- Response time -->
         <p class="text-center mb-4">Response time: {{ response_time }} milliseconds</p>
+        <!-- Result count for current page -->
         <p class="text-center mb-4">Displaying {{ current_page_count }} out of {{ total_results }} URLs on the current page.</p>
+        
+        <!-- Check if there are any documents to display -->
         {% if documents %}
+            <!-- List group for search results -->
             <ul class="list-group">
+                <!-- Loop through each document and display it -->
                 {% for doc in documents %}
                     <li class="list-group-item">
+                        <!-- Link to each document -->
                         <a href="{{ doc.url }}" target="_blank">{{ doc.url }}</a> (DocID: {{ doc.docid }})
                     </li>
                 {% endfor %}
             </ul>
+        <!-- Notify if there are no documents found -->
         {% else %}
             <p class="text-center mt-4">Your search did not match any documents.</p>
         {% endif %}
+        
+        <!-- Pagination controls -->
         <div class="text-center mt-4">
             <p>Page {{ current_page }} of {{ total_pages }}</p>
+            <!-- Link to the previous page if it exists -->
             {% if prev_page %}
                 <a href="/results?page={{ prev_page }}&query={{ query }}" class="btn btn-secondary">Previous</a>
             {% endif %}
+            <!-- Link to the next page if it exists -->
             {% if next_page %}
                 <a href="/results?page={{ next_page }}&query={{ query }}" class="btn btn-secondary">Next</a>
             {% endif %}
         </div>
+        <!-- Button to return to the home page -->
         <div class="text-center mt-4">
             <a href="/" class="btn btn-secondary">Return to search</a>
         </div>
