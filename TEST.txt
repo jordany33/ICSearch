@@ -1,0 +1,35 @@
+Group Members:
+Oscar Tran otran2@uci.edu 30841052
+Jordan Yee jordady1@uci.edu 91427122
+Travis Tran travitt1@uci.edu 67987698
+
+Queries that performed well
+    1. David Epstein
+    2. crone martins
+    3. Shindler
+    4. peter anteater
+    5. astrophysics
+    6. UCT
+    7. Jennifer Wongma
+    8. ics 32A
+    9. Thornton
+    10. sudoku
+Queries that performed badly
+    1. What time is it right now
+    2. What is the weather like in Texas
+    3. The biggest in the world
+    4. No such thing as a free lunch
+    5. You can’t judge a book by its cover
+    6. It’s a piece of cake
+    7. I think therefore I am
+    8. To be or not to be, that is the question
+    9. How to learn to write in javascript
+    10. Does Romeo die in Romeo and Juliet by Shakespeare?
+
+For the queries that did bad, a majority of the issues were long query times due to either a large number of stop words in the query, 
+or how common the queries were. To address these issues, we added the option to use champion lists in our search instead of the full index.
+We tested champion lists of different sizes and found the best results when using champion lists of roughly 1-2.5 thousand postings per term max.
+This drastically reduced the search time of our queries while also not really affecting the results in comparison to the full index. 
+Additionally, we also filtered out stop words if the query itself didn’t appear to have that many of them (not important to the query),
+this prevented us from wasting time accessing stop words that may not contribute much to the query results, while still checking them for 
+queries that relied on them.
