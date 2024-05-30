@@ -1,7 +1,7 @@
 import re
 import hashlib
 #Only needed when downloading the punkt for the first time
-#import nltk
+#import nltk and nltk.download('punkt')
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin, urldefrag
 import zipfile
@@ -11,9 +11,6 @@ import pickle
 import sys
 import io
 import math
-
-#When running first time only
-#nltk.download('punkt') 
 
 #Our index
 index = {}
