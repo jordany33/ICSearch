@@ -33,7 +33,7 @@ The project consists of the following files:
 4. Run the index construction application(s)
     ```
     python3 index.py
-        index.py will construct an index, document to document id mapping, and index of indexes from any zip file called developer.zip,
+        index.py will construct an index, document to document id mapping and index of indexes from any zip file called developer.zip,
         though the zip file name read can be changed by modifying line number 461 in the Python file. Optionally, you can also uncomment
         lines 472-474 and 490-492 to eliminate duplicate or near duplicate content. The files generated are called FinalIndex, pickleDocMap, 
         and indexOfIndexes, respectively, though the file names may be changed in the code if necessary at lines 441, 531, and 532. Additionally,
@@ -55,7 +55,7 @@ The project consists of the following files:
         into pages of 10 results each and allows users to navigate the next and previous pages through the next and prev buttons or to return
         to the search page using the button: return to search.
     
-    pyton3 search.py [size]
+    python3 search.py [size]
         search.py, when running continuously, prompts the user to enter a query or to exit the program, providing paged results when the former is
         chosen. It takes one optional argument size, which determines whether or not you use a champion list. If the argument is provided, it uses
         the files FinalIndex<size>, indexOfIndexes<size>, and pickleDocMap to run. Otherwise, the base index file names FinalIndex and indexOfIndexes
