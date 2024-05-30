@@ -34,7 +34,8 @@ The project consists of the following files:
     ```
     python3 index.py
         index.py will construct an index, document to document id mapping, and index of indexes from any zip file called developer.zip,
-        though the zip file name read can be changed by modifying line number 461 in the Python file. Optionally, you can also uncomment lines 472-474 and 490-492 to eliminate duplicate or near duplicate content. The files generated are called FinalIndex, pickleDocMap, 
+        though the zip file name read can be changed by modifying line number 461 in the Python file. Optionally, you can also uncomment
+        lines 472-474 and 490-492 to eliminate duplicate or near duplicate content. The files generated are called FinalIndex, pickleDocMap, 
         and indexOfIndexes, respectively, though the file names may be changed in the code if necessary at lines 441, 531, and 532. Additionally,
         a statistics file called stats.txt will be generated alongside other record-keeping files.
     python3 champion.py <size>
@@ -46,10 +47,22 @@ The project consists of the following files:
 5. Run the search application(s):
     ```bash
     python3 app.py [size]
-        app.py connects you to a port and gives a link to a web GUI that enables you to search queries, given that you have an index file, an index of the index file, and a document ID mapping. It takes one optional argument size, which determines whether or not you use a champion list. If the argument is provided, it uses the files FinalIndex<size>, indexOfIndexes<size>, and pickleDocMap to run. Otherwise, the base index file names FinalIndex and indexOfIndexes are used instead of the champion lists. The base names can be changed in the file on lines 10-11. The generated GUI enables users to search queries in the search bar. It also breaks up the results into pages of 10 results each and allows users to navigate the next and previous pages through the next and prev buttons or to return to the search page using the button: return to search.
-    or
+        app.py connects you to a port and gives a link to a web GUI that enables you to search queries, given that you have an index file,
+        an index of the index file, and a document ID mapping. It takes one optional argument size, which determines whether or not you
+        use a champion list. If the argument is provided, it uses the files FinalIndex<size>, indexOfIndexes<size>, and pickleDocMap to run.
+        Otherwise, the base index file names FinalIndex and indexOfIndexes are used instead of the champion lists. The base names can be
+        changed in the file on lines 10-11. The generated GUI enables users to search queries in the search bar. It also breaks up the results
+        into pages of 10 results each and allows users to navigate the next and previous pages through the next and prev buttons or to return
+        to the search page using the button: return to search.
+    
     pyton3 search.py [size]
-        search.py, when running continuously, prompts the user to enter a query or to exit the program, providing paged results when the former is chosen. It takes one optional argument size, which determines whether or not you use a champion list. If the argument is provided, it uses the files FinalIndex<size>, indexOfIndexes<size>, and pickleDocMap to run. Otherwise, the base index file names FinalIndex and indexOfIndexes are used instead of the champion lists. The base names can be changed in the file on lines 123-124. When the entered query has results, the program provides the first page of results before prompting the user to enter their next actions. The users can navigate between pages by entering next and prev into the prompt, or they can return to the search prompt by entering search. When the user wants to exit the program, they can ctrl + c or enter exit into the prompt.
+        search.py, when running continuously, prompts the user to enter a query or to exit the program, providing paged results when the former is
+        chosen. It takes one optional argument size, which determines whether or not you use a champion list. If the argument is provided, it uses
+        the files FinalIndex<size>, indexOfIndexes<size>, and pickleDocMap to run. Otherwise, the base index file names FinalIndex and indexOfIndexes
+        are used instead of the champion lists. The base names can be changed in the file on lines 123-124. When the entered query has results,
+        the program provides the first page of results before prompting the user to enter their next actions. The users can navigate between pages
+        by entering next and prev into the prompt, or they can return to the search prompt by entering search. When the user wants to exit the program,
+        they can ctrl + c or enter exit into the prompt.
     ```
 
 ### Usage
