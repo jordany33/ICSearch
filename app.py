@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
-# Set your OpenAI API key
+# OpenAI API key
 # openai.api_key = 'sk-proj-EFWRvbuNRhcDkIaBUOgYT3BlbkFJmgGomhRjJwSvwAPH9hU4'
 
 # Decide which index of index and index to use based on if a champion list argument is given
@@ -30,7 +30,7 @@ with open(indexOfIndexName, 'rb') as file:
 with open("pickleDocMap", 'rb') as file:
     doc_map = pickle.load(file)
 
-# Fetch the content of each URL and summarize
+# # Fetch the content of each URL and summarize
 # def fetch(url):
 #     try:
 #         response = requests.get(url)
