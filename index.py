@@ -100,7 +100,7 @@ def exact_duplicate_detection(tokens):
 def simhashClose(tokens):
     global seenSimHash_values
     simhash_val = makeSimhash(tokens)
-    if any(distance(simhash_val, i) < 3 for i in seenSimHash_values):
+    if any(distance(simhash_val, i) < 5 for i in seenSimHash_values):
         return True
     seenSimHash_values.add(simhash_val)
     return False
@@ -345,6 +345,21 @@ def addFields(postings, soup, field, stemmer):
                 postings[tok] = Posting(curNum, 0, {}, [], 0)
                 postings[tok].addField(field)
 
+#Indexes anchor words
+def indAnchor(postings, soup, stemmer):
+    #Finds all anchor tags, then iterates through them
+    texts = soup.find_all('a')
+    for text in texts:
+        #Gets the tokens, then updates/creates postings accordingly
+        content = text.get_text()
+        tokens = [stemmer.stem(x) for x in tokenize(content)]
+        for t in range(len(tokens)):
+            tok = tokens[t]
+            if tok in postings:
+                postings[tok].addCount(t)
+            else:
+                postings[tok] = Posting(curNum, 0, {}, [], 1)
+
 #Generates our tfIdf score for the given list of documents for a term, ie we call this on each posting list for each term
 def calcTFIDF(postings):
     global curNum
@@ -469,9 +484,9 @@ def build_index():
             #Checks to see if it has a url field
             if file.get('url'):
                 #Check for exact or near duplicate urls
-                # if (file.get('url') in seenURLs) or (detectSimilarUrl(file.get('url'))):
-                #     continue
-                # seenURLs.add(file.get('url'))
+                if (file.get('url') in seenURLs):
+                    continue
+                seenURLs.add(file.get('url'))
                 #Checks if there is content
                 if file.get('content'):
                     #Parses it
@@ -487,12 +502,13 @@ def build_index():
                         ps = PorterStemmer()
                         text = parsed_text.get_text()
                         #Check for near or exact duplicate page content
-                        # simTokens = tokenize(text)
-                        # if simhashClose(simTokens) or exact_duplicate_detection(simTokens):
-                        #     continue
+                        simTokens = tokenize(text)
+                        if simhashClose(simTokens) or exact_duplicate_detection(simTokens):
+                            continue
                         tokens = [ps.stem(x) for x in tokenize(text)]
                         postings = computeWordFrequencies(tokens)
                         #Get the text with important fields and update them
+                        indAnchor(postings, parsed_text, ps)
                         addFields(postings, parsed_text, 'b', ps)
                         addFields(postings, parsed_text, 'h1', ps)
                         addFields(postings, parsed_text, 'h2', ps)

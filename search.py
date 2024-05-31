@@ -158,10 +158,10 @@ if __name__ == "__main__":
         curPage = 1
         if any(x != [] for x in results.values()):
             print()
-            print("Currently on page 0")
-            print(f"Documents matching query '{query}':")
             #Get sorted results and print top 10
             relevantResults = resultsByRelevance(list(weights.values()), results)
+            print(f"Total documents matching query '{query}': {len(relevantResults)}")
+            print("Currently on page 0")
             if len(relevantResults)>10:
                 sortedResults = relevantResults[:10]
             for x in sortedResults:
