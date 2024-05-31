@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <!-- Contianer that centers content both vertically and horizontally -->
+    <!-- Container that centers content both vertically and horizontally -->
     <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100">
         <!-- Main heading -->
         <h1 class="display-4 text-center mb-4">Search Results</h1>
@@ -32,6 +32,8 @@
                     <li class="list-group-item">
                         <!-- Link to each document -->
                         <a href="{{ doc.url }}" target="_blank">{{ doc.url }}</a> (DocID: {{ doc.docid }})
+                        <!-- Summary of each document -->
+                        <p>{{ doc.summary }}</p>
                     </li>
                 {% endfor %}
             </ul>
