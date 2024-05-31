@@ -1,12 +1,18 @@
 import sys
 import time
+import openai
+import requests
 from flask import Flask, request, render_template
 from nltk.stem import PorterStemmer
 import pickle
 from index import tokenize 
 from search import makeQueryWeights, extractFromIndex, resultsByRelevance
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
+
+# Set your OpenAI API key
+# openai.api_key = 'sk-proj-EFWRvbuNRhcDkIaBUOgYT3BlbkFJmgGomhRjJwSvwAPH9hU4'
 
 # Decide which index of index and index to use based on if a champion list argument is given
 indexOfIndexName = "indexOfIndexes"
@@ -23,6 +29,42 @@ with open(indexOfIndexName, 'rb') as file:
 # Load the pickleDocMap from the pickle file
 with open("pickleDocMap", 'rb') as file:
     doc_map = pickle.load(file)
+
+# Fetch the content of each URL and summarize
+# def fetch(url):
+#     try:
+#         response = requests.get(url)
+#         if response.status_code == 200:
+#             page_content = response.text
+#             summary = summarize(page_content)
+#             return summary
+#         else:
+#             return "Failed to retrieve page's content."
+#     except requests.exceptions.SSLError:
+#         return "SSL certificate verification failed. Unable to retrieve content."
+#     except Exception as e:
+#         return str(e)
+
+# # Summarizes the content using OpenAI API
+# def summarize(content):
+#     try:
+#         # Extract text from HTML
+#         extract_text = BeautifulSoup(content, 'html.parser')
+#         html_to_text = extract_text.get_text()
+
+#         # Summarize content using OpenAI API gpt-3.5-turbo
+#         response = openai.ChatCompletion.create(
+#             model="gpt-3.5-turbo",
+#             messages=[
+#                 {"role": "system", "content": "Summarize the following content."},
+#                 {"role": "user", "content": html_to_text}
+#             ],
+#             max_tokens=150
+#         )
+#         summary = response['choices'][0]['message']['content'].strip()
+#         return summary
+#     except Exception as e:
+#         return str(e)
 
 # This is the home route
 @app.route('/')
@@ -59,7 +101,12 @@ def results():
         sorted_results = resultsByRelevance(list(weights.values()), results)  # Sort results by relevance
         total_results = len(sorted_results)  # Get the total number of results
         paginated_results = sorted_results[start:end]  # Paginate the results
-        documents = [{'docid': x, 'url': doc_map[x]} for x in paginated_results]  # Map document IDs to URLs
+        documents = []
+        for docid in paginated_results:
+            url = doc_map[docid]
+            # summary = fetch(url)
+            # documents.append({'docid': docid, 'url': url, 'summary': summary})            
+            documents.append({'docid': docid, 'url': url})
         total_pages = (total_results + max_per_page - 1) // max_per_page  # Calculate the total number of pages
     else:
         total_results = 0  # No results found
