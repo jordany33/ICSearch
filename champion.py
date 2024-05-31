@@ -23,6 +23,7 @@ def makeChampionList(size):
         posts = sorted(posts, key = (lambda x: -(x.getCount())))
         if len(posts) > size:
             posts = sorted(posts, key = (lambda x: -(x.getDoc())))[:size]
+        posts = sorted(posts, key = (lambda x: -(x.getDoc())))
         print(term, end = '', file = file2)
         for post in posts:
             print(str(post), end = '', file = file2)
