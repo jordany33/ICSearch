@@ -529,7 +529,7 @@ def build_index():
                 #Maps url to docid
                 docMap[curNum] = (file.get('url'))
                 curNum += 1
-                if curNum % 20000 == 0 and curNum != 0:
+                if curNum % 10000 == 0 and curNum != 0:
                     partialIndex(partialInd)
                     partialInd += 1
                     index.clear()
