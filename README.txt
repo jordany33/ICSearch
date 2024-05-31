@@ -36,7 +36,7 @@ The project consists of the following files:
     python3 index.py
         index.py will construct an index, document to document id mapping and index of indexes from any zip file called developer.zip,
         though the zip file name read can be changed by modifying line number 461 in the Python file. Optionally, you can also uncomment
-        lines 472-474 and 490-492 to eliminate duplicate or near duplicate content. The files generated are called FinalIndex, pickleDocMap, 
+        lines 487-489 and 505-507 to eliminate duplicate or near duplicate content. The files generated are called FinalIndex, pickleDocMap, 
         and indexOfIndexes, respectively, though the file names may be changed in the code if necessary at lines 441, 531, and 532. Additionally,
         a statistics file called stats.txt will be generated alongside other record-keeping files.
     python3 champion.py <size>
