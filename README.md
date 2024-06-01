@@ -33,10 +33,11 @@ The project consists of the following files:
 4. Run the index construction application(s)
     ```
     python3 index.py
-        index.py will construct an index, document to document id mapping and index of indexes from any zip file called developer.zip,
-        though the zip file name read can be changed by modifying line number 461 in the Python file. Optionally, you can also uncomment
-        lines 487-489 and 505-507 to eliminate duplicate or near duplicate content. The files generated are called FinalIndex, pickleDocMap, 
-        and indexOfIndexes, respectively, though the file names may be changed in the code if necessary at lines 441, 531, and 532. Additionally,
+        index.py will construct an index, document to document_id mapping, and index of indexes from any zip file called developer.zip,
+        though the default zip file name read can be changed by modifying line number 476 in the Python file. By default, the EC version of 
+        the index is generated, but optionally, you can also comment out lines 487-489 and 505-507 (simhashing and checksum EC), and line 511 
+        (anchor text indexing) to get the regular non extra credit files. By default, the files generated are called FinalIndex, pickleDocMap, 
+        and indexOfIndexes respectively, though the file names may be changed in the code if necessary at lines 456, 324, and 548. Additionally,
         a statistics file called stats.txt will be generated alongside other record-keeping files.
     python3 champion.py <size>
         champion.py will take one argument, size, which must be a whole number greater than 0. It will go through the files named FinalIndex 
@@ -53,7 +54,8 @@ The project consists of the following files:
         Otherwise, the base index file names FinalIndex and indexOfIndexes are used instead of the champion lists. The base names can be
         changed in the file on lines 10-11. The generated GUI enables users to search queries in the search bar. It also breaks up the results
         into pages of 10 results each and allows users to navigate the next and previous pages through the next and prev buttons or to return
-        to the search page using the button: return to search.
+        to the search page using the button: return to search. The EC AI summary of each url can also be activated by uncommenting out lines
+        36 in results.html and 14-15, 33067, and 107-108 in app.py. Commented out by default during interview.
     
     python3 search.py [size]
         search.py, when running continuously, prompts the user to enter a query or to exit the program, providing paged results when the former is
