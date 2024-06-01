@@ -56,7 +56,7 @@ The project consists of the following files:
         changed in the file on lines 10-11. The generated GUI enables users to search queries in the search bar. It also breaks up the results
         into pages of 10 results each and allows users to navigate the next and previous pages through the next and prev buttons or to return
         to the search page using the button: return to search. The EC AI summary for each url can also be activated by uncommenting out lines
-        36 in results.html and 14-15, 33067, and 107-108 in app.py. Commented out by default for interview purposes.
+        36 in results.html and 14-15, 33-67, and 107-108 in app.py. Commented out by default for interview purposes.
     
     python3 search.py [size]
         search.py, when running continuously, prompts the user to enter a query or to exit the program, providing paged results when the former is
