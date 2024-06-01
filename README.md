@@ -29,6 +29,7 @@ The project consists of the following files:
     ```bash
     pip install flask
     pip install nltk
+    pip install openai - For EC
      ```
 4. Run the index construction application(s)
     ```
